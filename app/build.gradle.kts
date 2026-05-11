@@ -39,16 +39,14 @@ configure<ApplicationExtension> {
     namespace = "org.schabi.newpipe"
 
     defaultConfig {
-        applicationId = "wah.mikooo.newpipe"
-        resValue("string", "app_name", "NewPipe")
+        applicationId = "apps.palmtree.pluspipe"
+        resValue("string", "app_name", "PlusPipe")
         minSdk = 23
         targetSdk = 35
 
         versionCode = System.getProperty("versionCodeOverride")?.toInt() ?: 1010
 
         versionName = "0.28.5"
-        versionName += "-sponsorblock"
-        versionName += "-r1"
 
         System.getProperty("versionNameSuffix")?.let { versionNameSuffix = it }
 
@@ -69,17 +67,17 @@ configure<ApplicationExtension> {
             if (normalizedWorkingBranch.isEmpty() || workingBranch in defaultBranches) {
                 // default values when branch name could not be determined or is master or dev
                 applicationIdSuffix = ".debug"
-                resValue("string", "app_name", "NewPipe Debug")
+                resValue("string", "app_name", "PlusPipe Debug")
             } else {
                 applicationIdSuffix = ".debug.$normalizedWorkingBranch"
-                resValue("string", "app_name", "NewPipe $workingBranch")
+                resValue("string", "app_name", "PlusPipe $workingBranch")
             }
         }
 
         release {
             System.getProperty("packageSuffix")?.let { suffix ->
                 applicationIdSuffix = suffix
-                resValue("string", "app_name", "NewPipe $suffix")
+                resValue("string", "app_name", "PlusPipe $suffix")
             }
             isMinifyEnabled = true
             isShrinkResources = true
