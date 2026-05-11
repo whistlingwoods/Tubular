@@ -5,18 +5,22 @@ import static org.schabi.newpipe.MainActivity.DEBUG;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.icu.text.CompactDecimalFormat;
 import android.os.Build;
+import android.text.BidiFormatter;
 import android.text.TextUtils;
-import android.util.DisplayMetrics;
+import android.text.format.DateUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.PluralsRes;
 import androidx.annotation.StringRes;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.content.ContextCompat;
 import androidx.core.math.MathUtils;
+import androidx.core.os.LocaleListCompat;
 import androidx.preference.PreferenceManager;
 
 import org.ocpsoft.prettytime.PrettyTime;
@@ -62,10 +66,51 @@ import java.util.stream.Collectors;
  */
 
 public final class Localization {
+    private static final String TAG = Localization.class.toString();
     public static final String DOT_SEPARATOR = " • ";
     private static PrettyTime prettyTime;
 
     private Localization() { }
+
+    /**
+     * Gets a string like you would normally do with {@link Context#getString}, except that when
+     * Context is not an AppCompatActivity the correct locale is still used. The latter step uses
+     * {@link ContextCompat#getString}, which might fail if the Locale system service is not
+     * available (e.g. inside of Compose previews). In that case this method falls back to plain old
+     * {@link Context#getString}.
+     * <p>This method also supports format args (see {@link #compatGetString(Context, int,
+     * Object...)}, unlike {@link ContextCompat#getString}.</p>
+     *
+     * @param context any Android context, even the App context
+     * @param resId the string resource to resolve
+     * @return the resolved string
+     */
+    public static String compatGetString(final Context context, @StringRes final int resId) {
+        try {
+            return ContextCompat.getString(context, resId);
+        } catch (final Throwable e) {
+            return context.getString(resId);
+        }
+    }
+
+    /**
+     * @see #compatGetString(Context, int)
+     * @param context any Android context, even the App context
+     * @param resId the string resource to resolve
+     * @param formatArgs the formatting arguments
+     * @return the resolved string
+     */
+    public static String compatGetString(final Context context,
+                                         @StringRes final int resId,
+                                         final Object... formatArgs) {
+        try {
+            // ContextCompat.getString() with formatArgs does not exist, so we just
+            // replicate its source code but with formatArgs
+            return ContextCompat.getContextForLanguage(context).getString(resId, formatArgs);
+        } catch (final Throwable e) {
+            return context.getString(resId, formatArgs);
+        }
+    }
 
     @NonNull
     public static String concatenateStrings(final String... strings) {
@@ -77,6 +122,20 @@ public final class Localization {
         return strings.stream()
                 .filter(string -> !TextUtils.isEmpty(string))
                 .collect(Collectors.joining(delimiter));
+    }
+
+    /**
+     * Localize a user name like <code>@foobar</code>.
+     *
+     * Will correctly handle right-to-left usernames by using a {@link BidiFormatter}.
+     * For right-to-left usernames, it will put the @ on the right side to read more naturally.
+     *
+     * @param plainName username, with an optional leading <code>@</code>
+     * @return a usernames that can include RTL-characters
+     */
+    @NonNull
+    public static String localizeUserName(final String plainName) {
+        return BidiFormatter.getInstance().unicodeWrap(plainName);
     }
 
     public static org.schabi.newpipe.extractor.localization.Localization getPreferredLocalization(
@@ -99,35 +158,34 @@ public final class Localization {
         return getLocaleFromPrefs(context, R.string.content_language_key);
     }
 
-    public static Locale getAppLocale(@NonNull final Context context) {
-        return getLocaleFromPrefs(context, R.string.app_language_key);
+    public static Locale getAppLocale() {
+        final Locale customLocale = AppCompatDelegate.getApplicationLocales().get(0);
+        return customLocale != null ? customLocale : Locale.getDefault();
     }
 
-    public static String localizeNumber(@NonNull final Context context, final long number) {
-        return localizeNumber(context, (double) number);
+    public static String localizeNumber(final long number) {
+        return localizeNumber((double) number);
     }
 
-    public static String localizeNumber(@NonNull final Context context, final double number) {
-        final NumberFormat nf = NumberFormat.getInstance(getAppLocale(context));
-        return nf.format(number);
+    public static String localizeNumber(final double number) {
+        return NumberFormat.getInstance(getAppLocale()).format(number);
     }
 
-    public static String formatDate(@NonNull final Context context,
-                                    @NonNull final OffsetDateTime offsetDateTime) {
+    public static String formatDate(@NonNull final OffsetDateTime offsetDateTime) {
         return DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
-                .withLocale(getAppLocale(context)).format(offsetDateTime
-                        .atZoneSameInstant(ZoneId.systemDefault()));
+            .withLocale(getAppLocale())
+            .format(offsetDateTime.atZoneSameInstant(ZoneId.systemDefault()));
     }
 
     @SuppressLint("StringFormatInvalid")
     public static String localizeUploadDate(@NonNull final Context context,
                                             @NonNull final OffsetDateTime offsetDateTime) {
-        return context.getString(R.string.upload_date_text, formatDate(context, offsetDateTime));
+        return context.getString(R.string.upload_date_text, formatDate(offsetDateTime));
     }
 
     public static String localizeViewCount(@NonNull final Context context, final long viewCount) {
         return getQuantity(context, R.plurals.views, R.string.no_views, viewCount,
-                localizeNumber(context, viewCount));
+                localizeNumber(viewCount));
     }
 
     public static String localizeStreamCount(@NonNull final Context context,
@@ -136,12 +194,12 @@ public final class Localization {
             case (int) ListExtractor.ITEM_COUNT_UNKNOWN:
                 return "";
             case (int) ListExtractor.ITEM_COUNT_INFINITE:
-                return context.getResources().getString(R.string.infinite_videos);
+                return context.getString(R.string.infinite_videos);
             case (int) ListExtractor.ITEM_COUNT_MORE_THAN_100:
-                return context.getResources().getString(R.string.more_than_100_videos);
+                return context.getString(R.string.more_than_100_videos);
             default:
                 return getQuantity(context, R.plurals.videos, R.string.no_videos, streamCount,
-                        localizeNumber(context, streamCount));
+                        localizeNumber(streamCount));
         }
     }
 
@@ -151,9 +209,9 @@ public final class Localization {
             case (int) ListExtractor.ITEM_COUNT_UNKNOWN:
                 return "";
             case (int) ListExtractor.ITEM_COUNT_INFINITE:
-                return context.getResources().getString(R.string.infinite_videos_mini);
+                return context.getString(R.string.infinite_videos_mini);
             case (int) ListExtractor.ITEM_COUNT_MORE_THAN_100:
-                return context.getResources().getString(R.string.more_than_100_videos_mini);
+                return context.getString(R.string.more_than_100_videos_mini);
             default:
                 return String.valueOf(streamCount);
         }
@@ -162,27 +220,33 @@ public final class Localization {
     public static String localizeWatchingCount(@NonNull final Context context,
                                                final long watchingCount) {
         return getQuantity(context, R.plurals.watching, R.string.no_one_watching, watchingCount,
-                localizeNumber(context, watchingCount));
+                localizeNumber(watchingCount));
     }
 
     public static String shortCount(@NonNull final Context context, final long count) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return CompactDecimalFormat.getInstance(getAppLocale(context),
+            return CompactDecimalFormat.getInstance(getAppLocale(),
                     CompactDecimalFormat.CompactStyle.SHORT).format(count);
         }
 
         final double value = (double) count;
         if (count >= 1000000000) {
-            return localizeNumber(context, round(value / 1000000000))
-                    + context.getString(R.string.short_billion);
+            final double shortenedValue = value / 1000000000;
+            final int scale = shortenedValue >= 100 ? 0 : 1;
+            return context.getString(R.string.short_billion,
+                    localizeNumber(round(shortenedValue, scale)));
         } else if (count >= 1000000) {
-            return localizeNumber(context, round(value / 1000000))
-                    + context.getString(R.string.short_million);
+            final double shortenedValue = value / 1000000;
+            final int scale = shortenedValue >= 100 ? 0 : 1;
+            return context.getString(R.string.short_million,
+                    localizeNumber(round(shortenedValue, scale)));
         } else if (count >= 1000) {
-            return localizeNumber(context, round(value / 1000))
-                    + context.getString(R.string.short_thousand);
+            final double shortenedValue = value / 1000;
+            final int scale = shortenedValue >= 100 ? 0 : 1;
+            return context.getString(R.string.short_thousand,
+                    localizeNumber(round(shortenedValue, scale)));
         } else {
-            return localizeNumber(context, value);
+            return localizeNumber(value);
         }
     }
 
@@ -219,11 +283,6 @@ public final class Localization {
                 deletedCount, shortCount(context, deletedCount));
     }
 
-    public static String replyCount(@NonNull final Context context, final int replyCount) {
-        return getQuantity(context, R.plurals.replies, 0, replyCount,
-                String.valueOf(replyCount));
-    }
-
     /**
      * @param context the Android context
      * @param likeCount the like count, possibly negative if unknown
@@ -238,25 +297,31 @@ public final class Localization {
         }
     }
 
+    /**
+     * Get a readable text for a duration in the format {@code hours:minutes:seconds}.
+     *
+     * @param duration the duration in seconds
+     * @return a formatted duration String or {@code 00:00} if the duration is zero.
+     */
     public static String getDurationString(final long duration) {
-        final String output;
+        return DateUtils.formatElapsedTime(Math.max(duration, 0));
+    }
 
-        final long days = duration / (24 * 60 * 60L); /* greater than a day */
-        final long hours = duration % (24 * 60 * 60L) / (60 * 60L); /* greater than an hour */
-        final long minutes = duration % (24 * 60 * 60L) % (60 * 60L) / 60L;
-        final long seconds = duration % 60L;
-
-        if (duration < 0) {
-            output = "0:00";
-        } else if (days > 0) {
-            //handle days
-            output = String.format(Locale.US, "%d:%02d:%02d:%02d", days, hours, minutes, seconds);
-        } else if (hours > 0) {
-            output = String.format(Locale.US, "%d:%02d:%02d", hours, minutes, seconds);
-        } else {
-            output = String.format(Locale.US, "%d:%02d", minutes, seconds);
-        }
-        return output;
+    /**
+     * Get a readable text for a duration in the format {@code hours:minutes:seconds+}. If the given
+     * duration is incomplete, a plus is appended to the duration string.
+     *
+     * @param duration the duration in seconds
+     * @param isDurationComplete whether the given duration is complete or whether info is missing
+     * @param showDurationPrefix whether the duration-prefix shall be shown
+     * @return a formatted duration String or {@code 00:00} if the duration is zero.
+     */
+    public static String getDurationString(final long duration, final boolean isDurationComplete,
+                                           final boolean showDurationPrefix) {
+        final String output = getDurationString(duration);
+        final String durationPrefix = showDurationPrefix ? "⏱ " : "";
+        final String durationPostfix = isDurationComplete ? "" : "+";
+        return durationPrefix + output + durationPostfix;
     }
 
     /**
@@ -301,7 +366,7 @@ public final class Localization {
      * <ul>
      *     <li>English (original)</li>
      *     <li>English (descriptive)</li>
-     *     <li>Spanish (dubbed)</li>
+     *     <li>Spanish (Spain) (dubbed)</li>
      * </ul>
      *
      * @param context the context used to get the app language
@@ -311,7 +376,7 @@ public final class Localization {
     public static String audioTrackName(@NonNull final Context context, final AudioStream track) {
         final String name;
         if (track.getAudioLocale() != null) {
-            name = track.getAudioLocale().getDisplayLanguage(getAppLocale(context));
+            name = track.getAudioLocale().getDisplayName();
         } else if (track.getAudioTrackName() != null) {
             name = track.getAudioTrackName();
         } else {
@@ -320,25 +385,20 @@ public final class Localization {
 
         if (track.getAudioTrackType() != null) {
             final String trackType = audioTrackType(context, track.getAudioTrackType());
-            if (trackType != null) {
-                return context.getString(R.string.audio_track_name, name, trackType);
-            }
+            return context.getString(R.string.audio_track_name, name, trackType);
         }
         return name;
     }
 
-    @Nullable
+    @NonNull
     private static String audioTrackType(@NonNull final Context context,
-                                         final AudioTrackType trackType) {
-        switch (trackType) {
-            case ORIGINAL:
-                return context.getString(R.string.audio_track_type_original);
-            case DUBBED:
-                return context.getString(R.string.audio_track_type_dubbed);
-            case DESCRIPTIVE:
-                return context.getString(R.string.audio_track_type_descriptive);
-        }
-        return null;
+                                         @NonNull final AudioTrackType trackType) {
+        return switch (trackType) {
+            case ORIGINAL -> context.getString(R.string.audio_track_type_original);
+            case DUBBED -> context.getString(R.string.audio_track_type_dubbed);
+            case DESCRIPTIVE -> context.getString(R.string.audio_track_type_descriptive);
+            case SECONDARY -> context.getString(R.string.audio_track_type_secondary);
+        };
     }
 
     /*//////////////////////////////////////////////////////////////////////////
@@ -351,8 +411,8 @@ public final class Localization {
         prettyTime.removeUnit(Decade.class);
     }
 
-    public static PrettyTime resolvePrettyTime(@NonNull final Context context) {
-        return new PrettyTime(getAppLocale(context));
+    public static PrettyTime resolvePrettyTime() {
+        return new PrettyTime(getAppLocale());
     }
 
     public static String relativeTime(@NonNull final OffsetDateTime offsetDateTime) {
@@ -370,9 +430,10 @@ public final class Localization {
      *         {@code parsed != null} and the relevant setting is enabled, {@code textual} will
      *         be appended to the returned string for debugging purposes.
      */
+    @Nullable
     public static String relativeTimeOrTextual(@Nullable final Context context,
                                                @Nullable final DateWrapper parsed,
-                                               final String textual) {
+                                               @Nullable final String textual) {
         if (parsed == null) {
             return textual;
         } else if (DEBUG && context != null && PreferenceManager
@@ -382,14 +443,6 @@ public final class Localization {
         } else {
             return relativeTime(parsed.offsetDateTime());
         }
-    }
-
-    public static void assureCorrectAppLanguage(final Context c) {
-        final Resources res = c.getResources();
-        final DisplayMetrics dm = res.getDisplayMetrics();
-        final Configuration conf = res.getConfiguration();
-        conf.setLocale(getAppLocale(c));
-        res.updateConfiguration(conf, dm);
     }
 
     private static Locale getLocaleFromPrefs(@NonNull final Context context,
@@ -405,16 +458,28 @@ public final class Localization {
         }
     }
 
-    private static double round(final double value) {
-        return new BigDecimal(value).setScale(1, RoundingMode.HALF_UP).doubleValue();
+    private static double round(final double value, final int scale) {
+        return new BigDecimal(value).setScale(scale, RoundingMode.HALF_UP).doubleValue();
     }
 
+    /**
+     * A wrapper around {@code context.getResources().getQuantityString()} with some safeguard.
+     *
+     * @param context the Android context
+     * @param pluralId the ID of the plural resource
+     * @param zeroCaseStringId the resource ID of the string to use in case {@code count=0},
+     *                         or 0 if the plural resource should be used in the zero case too
+     * @param count the number that should be used to pick the correct plural form
+     * @param formattedCount the formatting parameter to substitute inside the plural resource,
+     *                       ideally just {@code count} converted to string
+     * @return the formatted string with the correct pluralization
+     */
     private static String getQuantity(@NonNull final Context context,
                                       @PluralsRes final int pluralId,
                                       @StringRes final int zeroCaseStringId,
                                       final long count,
                                       final String formattedCount) {
-        if (count == 0) {
+        if (count == 0 && zeroCaseStringId != 0) {
             return context.getString(zeroCaseStringId);
         }
 
@@ -424,5 +489,36 @@ public final class Localization {
         // or some language have some specific rule... then we have to change it)
         final int safeCount = (int) MathUtils.clamp(count, Integer.MIN_VALUE, Integer.MAX_VALUE);
         return context.getResources().getQuantityString(pluralId, safeCount, formattedCount);
+    }
+
+    // Starting with pull request #12093, NewPipe exclusively uses Android's
+    // public per-app language APIs to read and set the UI language for NewPipe.
+    // The following code will migrate any existing custom app language in SharedPreferences to
+    // use the public per-app language APIs instead.
+    // For reference, see
+    // https://android-developers.googleblog.com/2022/11/per-app-language-preferences-part-1.html
+    public static void migrateAppLanguageSettingIfNecessary(@NonNull final Context context) {
+        final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        final String appLanguageKey = context.getString(R.string.app_language_key);
+        final String appLanguageValue = sp.getString(appLanguageKey, null);
+        if (appLanguageValue != null) {
+            // The app language key is used on Android versions < 33
+            // for more info, see ContentSettingsFragment
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                sp.edit().remove(appLanguageKey).apply();
+            }
+            final String appLanguageDefaultValue =
+                    context.getString(R.string.default_localization_key);
+            if (!appLanguageValue.equals(appLanguageDefaultValue)) {
+                try {
+                    AppCompatDelegate.setApplicationLocales(
+                        LocaleListCompat.forLanguageTags(appLanguageValue));
+                } catch (final RuntimeException e) {
+                    Log.e(TAG, "Failed to migrate previous custom app language "
+                            + "setting to public per-app language APIs"
+                    );
+                }
+            }
+        }
     }
 }

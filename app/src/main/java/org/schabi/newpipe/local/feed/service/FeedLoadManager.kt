@@ -11,24 +11,26 @@ import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.processors.PublishProcessor
 import io.reactivex.rxjava3.schedulers.Schedulers
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import org.schabi.newpipe.R
 import org.schabi.newpipe.database.feed.model.FeedGroupEntity
 import org.schabi.newpipe.database.subscription.NotificationMode
 import org.schabi.newpipe.database.subscription.SubscriptionEntity
 import org.schabi.newpipe.extractor.Info
 import org.schabi.newpipe.extractor.NewPipe
+import org.schabi.newpipe.extractor.ServiceList
 import org.schabi.newpipe.extractor.feed.FeedInfo
 import org.schabi.newpipe.extractor.stream.StreamInfoItem
+import org.schabi.newpipe.ktx.getStringSafe
 import org.schabi.newpipe.local.feed.FeedDatabaseManager
 import org.schabi.newpipe.local.subscription.SubscriptionManager
 import org.schabi.newpipe.util.ChannelTabHelper
 import org.schabi.newpipe.util.ExtractorHelper.getChannelInfo
 import org.schabi.newpipe.util.ExtractorHelper.getChannelTab
 import org.schabi.newpipe.util.ExtractorHelper.getMoreChannelTabItems
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
 
 class FeedLoadManager(private val context: Context) {
 
@@ -58,7 +60,7 @@ class FeedLoadManager(private val context: Context) {
      */
     fun startLoading(
         groupId: Long = FeedGroupEntity.GROUP_ALL_ID,
-        ignoreOutdatedThreshold: Boolean = false,
+        ignoreOutdatedThreshold: Boolean = false
     ): Single<List<Notification<FeedUpdateInfo>>> {
         val defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
         val useFeedExtractor = defaultSharedPreferences.getBoolean(
@@ -69,12 +71,10 @@ class FeedLoadManager(private val context: Context) {
         val outdatedThreshold = if (ignoreOutdatedThreshold) {
             OffsetDateTime.now(ZoneOffset.UTC)
         } else {
-            val thresholdOutdatedSeconds = (
-                defaultSharedPreferences.getString(
-                    context.getString(R.string.feed_update_threshold_key),
-                    context.getString(R.string.feed_update_threshold_default_value)
-                ) ?: context.getString(R.string.feed_update_threshold_default_value)
-                ).toInt()
+            val thresholdOutdatedSeconds = defaultSharedPreferences.getStringSafe(
+                context.getString(R.string.feed_update_threshold_key),
+                context.getString(R.string.feed_update_threshold_default_value)
+            ).toInt()
             OffsetDateTime.now(ZoneOffset.UTC).minusSeconds(thresholdOutdatedSeconds.toLong())
         }
 
@@ -85,11 +85,18 @@ class FeedLoadManager(private val context: Context) {
             FeedGroupEntity.GROUP_ALL_ID -> feedDatabaseManager.outdatedSubscriptions(
                 outdatedThreshold
             )
+
             GROUP_NOTIFICATION_ENABLED -> feedDatabaseManager.outdatedSubscriptionsWithNotificationMode(
-                outdatedThreshold, NotificationMode.ENABLED
+                outdatedThreshold,
+                NotificationMode.ENABLED
             )
+
             else -> feedDatabaseManager.outdatedSubscriptionsForGroup(groupId, outdatedThreshold)
         }
+
+        // like `currentProgress`, but counts the number of YouTube extractions that have begun, so
+        // they can be properly throttled every once in a while (see doOnNext below)
+        val youtubeExtractionCount = AtomicInteger()
 
         return outdatedSubscriptions
             .take(1)
@@ -104,8 +111,18 @@ class FeedLoadManager(private val context: Context) {
                 broadcastProgress()
             }
             .observeOn(Schedulers.io())
-            .flatMap { Flowable.fromIterable(it) }
+            // Randomize user subscription ordering to attempt to resist fingerprinting
+            .flatMap { Flowable.fromIterable(it.shuffled()) }
             .takeWhile { !cancelSignal.get() }
+            .doOnNext { subscriptionEntity ->
+                // throttle YouTube extractions once every BATCH_SIZE to avoid being rate limited
+                if (subscriptionEntity.serviceId == ServiceList.YouTube.serviceId) {
+                    val previousCount = youtubeExtractionCount.getAndIncrement()
+                    if (previousCount != 0 && previousCount % BATCH_SIZE == 0) {
+                        Thread.sleep(DELAY_BETWEEN_BATCHES_MILLIS.random())
+                    }
+                }
+            }
             .parallel(PARALLEL_EXTRACTIONS, PARALLEL_EXTRACTIONS * 2)
             .runOn(Schedulers.io(), PARALLEL_EXTRACTIONS * 2)
             .filter { !cancelSignal.get() }
@@ -173,7 +190,8 @@ class FeedLoadManager(private val context: Context) {
 
                 val channelInfo = getChannelInfo(
                     subscriptionEntity.serviceId,
-                    subscriptionEntity.url, true
+                    subscriptionEntity.url,
+                    true
                 )
                     .onErrorReturn(storeOriginalErrorAndRethrow)
                     .blockingGet()
@@ -203,7 +221,8 @@ class FeedLoadManager(private val context: Context) {
                         ) {
                             val infoItemsPage = getMoreChannelTabItems(
                                 subscriptionEntity.serviceId,
-                                linkHandler, channelTabInfo.nextPage
+                                linkHandler,
+                                channelTabInfo.nextPage
                             )
                                 .blockingGet()
 
@@ -221,7 +240,7 @@ class FeedLoadManager(private val context: Context) {
                     subscriptionEntity,
                     originalInfo!!,
                     streams!!,
-                    errors,
+                    errors
                 )
             )
         } catch (e: Throwable) {
@@ -292,6 +311,7 @@ class FeedLoadManager(private val context: Context) {
                                 feedDatabaseManager.markAsOutdated(info.uid)
                             }
                         }
+
                         notification.isOnError -> {
                             val error = notification.error
                             feedResultsHolder.addError(error!!)
@@ -329,7 +349,19 @@ class FeedLoadManager(private val context: Context) {
         /**
          * How many extractions will be running in parallel.
          */
-        private const val PARALLEL_EXTRACTIONS = 6
+        private const val PARALLEL_EXTRACTIONS = 3
+
+        /**
+         * How many YouTube extractions to perform before waiting [DELAY_BETWEEN_BATCHES_MILLIS]
+         * to avoid being rate limited
+         */
+        private const val BATCH_SIZE = 50
+
+        /**
+         * Wait a random delay in this range once every [BATCH_SIZE] YouTube extractions to avoid
+         * being rate limited
+         */
+        private val DELAY_BETWEEN_BATCHES_MILLIS = (6000L..12000L)
 
         /**
          * Number of items to buffer to mass-insert in the database.

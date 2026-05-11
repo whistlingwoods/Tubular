@@ -1,5 +1,7 @@
 package org.schabi.newpipe.settings;
 
+import static org.schabi.newpipe.local.bookmark.MergedPlaylistManager.getMergedOrderedPlaylists;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +11,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.compose.ui.platform.ComposeView;
 import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,13 +28,14 @@ import org.schabi.newpipe.error.ErrorUtil;
 import org.schabi.newpipe.error.UserAction;
 import org.schabi.newpipe.local.playlist.LocalPlaylistManager;
 import org.schabi.newpipe.local.playlist.RemotePlaylistManager;
-import org.schabi.newpipe.util.image.PicassoHelper;
+import org.schabi.newpipe.ui.emptystate.EmptyStateSpec;
+import org.schabi.newpipe.ui.emptystate.EmptyStateUtil;
+import org.schabi.newpipe.util.image.CoilHelper;
 
 import java.util.List;
 import java.util.Vector;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.disposables.Disposable;
 
 public class SelectPlaylistFragment extends DialogFragment {
@@ -39,7 +43,7 @@ public class SelectPlaylistFragment extends DialogFragment {
     private OnSelectedListener onSelectedListener = null;
 
     private ProgressBar progressBar;
-    private TextView emptyView;
+    private ComposeView emptyView;
     private RecyclerView recyclerView;
     private Disposable disposable = null;
 
@@ -61,6 +65,7 @@ public class SelectPlaylistFragment extends DialogFragment {
         recyclerView = v.findViewById(R.id.items_list);
         emptyView = v.findViewById(R.id.empty_state_view);
 
+        EmptyStateUtil.setEmptyStateComposable(emptyView, EmptyStateSpec.NoBookmarkedPlaylist);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         final SelectPlaylistAdapter playlistAdapter = new SelectPlaylistAdapter();
         recyclerView.setAdapter(playlistAdapter);
@@ -90,8 +95,7 @@ public class SelectPlaylistFragment extends DialogFragment {
         final LocalPlaylistManager localPlaylistManager = new LocalPlaylistManager(database);
         final RemotePlaylistManager remotePlaylistManager = new RemotePlaylistManager(database);
 
-        disposable = Flowable.combineLatest(localPlaylistManager.getPlaylists(),
-                remotePlaylistManager.getPlaylists(), PlaylistLocalItem::merge)
+        disposable = getMergedOrderedPlaylists(localPlaylistManager, remotePlaylistManager)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::displayPlaylists, this::onError);
     }
@@ -118,12 +122,12 @@ public class SelectPlaylistFragment extends DialogFragment {
 
             if (selectedItem instanceof PlaylistMetadataEntry) {
                 final PlaylistMetadataEntry entry = ((PlaylistMetadataEntry) selectedItem);
-                onSelectedListener.onLocalPlaylistSelected(entry.uid, entry.name);
+                onSelectedListener.onLocalPlaylistSelected(entry.getUid(), entry.getOrderingName());
 
             } else if (selectedItem instanceof PlaylistRemoteEntity) {
                 final PlaylistRemoteEntity entry = ((PlaylistRemoteEntity) selectedItem);
                 onSelectedListener.onRemotePlaylistSelected(
-                        entry.getServiceId(), entry.getUrl(), entry.getName());
+                        entry.getServiceId(), entry.getUrl(), entry.getOrderingName());
             }
         }
         dismiss();
@@ -138,7 +142,7 @@ public class SelectPlaylistFragment extends DialogFragment {
         void onRemotePlaylistSelected(int serviceId, String url, String name);
     }
 
-    private class SelectPlaylistAdapter
+    private final class SelectPlaylistAdapter
             extends RecyclerView.Adapter<SelectPlaylistAdapter.SelectPlaylistItemHolder> {
         @NonNull
         @Override
@@ -154,20 +158,17 @@ public class SelectPlaylistFragment extends DialogFragment {
                                      final int position) {
             final PlaylistLocalItem selectedItem = playlists.get(position);
 
-            if (selectedItem instanceof PlaylistMetadataEntry) {
-                final PlaylistMetadataEntry entry = ((PlaylistMetadataEntry) selectedItem);
-
-                holder.titleView.setText(entry.name);
+            if (selectedItem instanceof PlaylistMetadataEntry entry) {
+                holder.titleView.setText(entry.getOrderingName());
                 holder.view.setOnClickListener(view -> clickedItem(position));
-                PicassoHelper.loadPlaylistThumbnail(entry.thumbnailUrl).into(holder.thumbnailView);
+                CoilHelper.INSTANCE.loadPlaylistThumbnail(holder.thumbnailView,
+                        entry.getThumbnailUrl());
 
-            } else if (selectedItem instanceof PlaylistRemoteEntity) {
-                final PlaylistRemoteEntity entry = ((PlaylistRemoteEntity) selectedItem);
-
-                holder.titleView.setText(entry.getName());
+            } else if (selectedItem instanceof PlaylistRemoteEntity entry) {
+                holder.titleView.setText(entry.getOrderingName());
                 holder.view.setOnClickListener(view -> clickedItem(position));
-                PicassoHelper.loadPlaylistThumbnail(entry.getThumbnailUrl())
-                        .into(holder.thumbnailView);
+                CoilHelper.INSTANCE.loadPlaylistThumbnail(holder.thumbnailView,
+                        entry.getThumbnailUrl());
             }
         }
 

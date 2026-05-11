@@ -14,6 +14,7 @@ import org.schabi.newpipe.database.LocalItem;
 import org.schabi.newpipe.database.stream.model.StreamStateEntity;
 import org.schabi.newpipe.info_list.ItemViewMode;
 import org.schabi.newpipe.local.history.HistoryRecordManager;
+import org.schabi.newpipe.local.holder.LocalBookmarkPlaylistItemHolder;
 import org.schabi.newpipe.local.holder.LocalItemHolder;
 import org.schabi.newpipe.local.holder.LocalPlaylistCardItemHolder;
 import org.schabi.newpipe.local.holder.LocalPlaylistGridItemHolder;
@@ -24,6 +25,7 @@ import org.schabi.newpipe.local.holder.LocalPlaylistStreamItemHolder;
 import org.schabi.newpipe.local.holder.LocalStatisticStreamCardItemHolder;
 import org.schabi.newpipe.local.holder.LocalStatisticStreamGridItemHolder;
 import org.schabi.newpipe.local.holder.LocalStatisticStreamItemHolder;
+import org.schabi.newpipe.local.holder.RemoteBookmarkPlaylistItemHolder;
 import org.schabi.newpipe.local.holder.RemotePlaylistCardItemHolder;
 import org.schabi.newpipe.local.holder.RemotePlaylistGridItemHolder;
 import org.schabi.newpipe.local.holder.RemotePlaylistItemHolder;
@@ -35,6 +37,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 /*
  * Created by Christian Schabesberger on 01.08.16.
@@ -73,10 +76,12 @@ public class LocalItemListAdapter extends RecyclerView.Adapter<RecyclerView.View
     private static final int LOCAL_PLAYLIST_HOLDER_TYPE = 0x2000;
     private static final int LOCAL_PLAYLIST_GRID_HOLDER_TYPE = 0x2001;
     private static final int LOCAL_PLAYLIST_CARD_HOLDER_TYPE = 0x2002;
+    private static final int LOCAL_BOOKMARK_PLAYLIST_HOLDER_TYPE = 0x2003;
 
     private static final int REMOTE_PLAYLIST_HOLDER_TYPE = 0x3000;
     private static final int REMOTE_PLAYLIST_GRID_HOLDER_TYPE = 0x3001;
     private static final int REMOTE_PLAYLIST_CARD_HOLDER_TYPE = 0x3002;
+    private static final int REMOTE_BOOKMARK_PLAYLIST_HOLDER_TYPE = 0x3003;
 
     private final LocalItemBuilder localItemBuilder;
     private final ArrayList<LocalItem> localItems;
@@ -84,14 +89,16 @@ public class LocalItemListAdapter extends RecyclerView.Adapter<RecyclerView.View
     private final DateTimeFormatter dateTimeFormatter;
 
     private boolean showFooter = false;
-    private View header = null;
+    private Supplier<View> headerSupplier = null;
     private View footer = null;
     private ItemViewMode itemViewMode = ItemViewMode.LIST;
+    private boolean useItemHandle = false;
 
     public LocalItemListAdapter(final Context context) {
         recordManager = new HistoryRecordManager(context);
         localItemBuilder = new LocalItemBuilder(context);
         localItems = new ArrayList<>();
+
         dateTimeFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
                 .withLocale(Localization.getPreferredLocale(context));
     }
@@ -119,7 +126,7 @@ public class LocalItemListAdapter extends RecyclerView.Adapter<RecyclerView.View
         if (DEBUG) {
             Log.d(TAG, "addItems() after > offsetStart = " + offsetStart + ", "
                     + "localItems.size() = " + localItems.size() + ", "
-                    + "header = " + header + ", footer = " + footer + ", "
+                    + "header = " + hasHeader() + ", footer = " + footer + ", "
                     + "showFooter = " + showFooter);
         }
         notifyItemRangeInserted(offsetStart, data.size());
@@ -139,7 +146,7 @@ public class LocalItemListAdapter extends RecyclerView.Adapter<RecyclerView.View
         final int index = localItems.indexOf(data);
         if (index != -1) {
             localItems.remove(index);
-            notifyItemRemoved(index + (header != null ? 1 : 0));
+            notifyItemRemoved(index + (hasHeader() ? 1 : 0));
         } else {
             // this happens when
             // 1) removeItem is called on infoItemDuplicate as in showStreamItemDialog of
@@ -180,9 +187,13 @@ public class LocalItemListAdapter extends RecyclerView.Adapter<RecyclerView.View
         this.itemViewMode = itemViewMode;
     }
 
-    public void setHeader(final View header) {
-        final boolean changed = header != this.header;
-        this.header = header;
+    public void setUseItemHandle(final boolean useItemHandle) {
+        this.useItemHandle = useItemHandle;
+    }
+
+    public void setHeaderSupplier(@Nullable final Supplier<View> headerSupplier) {
+        final boolean changed = headerSupplier != this.headerSupplier;
+        this.headerSupplier = headerSupplier;
         if (changed) {
             notifyDataSetChanged();
         }
@@ -192,6 +203,12 @@ public class LocalItemListAdapter extends RecyclerView.Adapter<RecyclerView.View
         this.footer = view;
     }
 
+    protected boolean hasHeader() {
+        return this.headerSupplier != null;
+    }
+
+    @Deprecated(since = "Calling this method with `true` may cause crashes, see "
+            + "https://github.com/TeamNewPipe/NewPipe/pull/12996#pullrequestreview-3713317115")
     public void showFooter(final boolean show) {
         if (DEBUG) {
             Log.d(TAG, "showFooter() called with: show = [" + show + "]");
@@ -202,6 +219,8 @@ public class LocalItemListAdapter extends RecyclerView.Adapter<RecyclerView.View
 
         showFooter = show;
         if (show) {
+            Log.w(TAG, "Calling LocalItemListAdapter.showFooter(true) may cause crashes, see https"
+                    + "://github.com/TeamNewPipe/NewPipe/pull/12996#pullrequestreview-3713317115");
             notifyItemInserted(sizeConsideringHeader());
         } else {
             notifyItemRemoved(sizeConsideringHeader());
@@ -209,11 +228,11 @@ public class LocalItemListAdapter extends RecyclerView.Adapter<RecyclerView.View
     }
 
     private int adapterOffsetWithoutHeader(final int offset) {
-        return offset - (header != null ? 1 : 0);
+        return offset - (hasHeader() ? 1 : 0);
     }
 
     private int sizeConsideringHeader() {
-        return localItems.size() + (header != null ? 1 : 0);
+        return localItems.size() + (hasHeader() ? 1 : 0);
     }
 
     public ArrayList<LocalItem> getItemsList() {
@@ -223,7 +242,7 @@ public class LocalItemListAdapter extends RecyclerView.Adapter<RecyclerView.View
     @Override
     public int getItemCount() {
         int count = localItems.size();
-        if (header != null) {
+        if (hasHeader()) {
             count++;
         }
         if (footer != null && showFooter) {
@@ -233,7 +252,7 @@ public class LocalItemListAdapter extends RecyclerView.Adapter<RecyclerView.View
         if (DEBUG) {
             Log.d(TAG, "getItemCount() called, count = " + count + ", "
                     + "localItems.size() = " + localItems.size() + ", "
-                    + "header = " + header + ", footer = " + footer + ", "
+                    + "header = " + hasHeader() + ", footer = " + footer + ", "
                     + "showFooter = " + showFooter);
         }
         return count;
@@ -246,9 +265,9 @@ public class LocalItemListAdapter extends RecyclerView.Adapter<RecyclerView.View
             Log.d(TAG, "getItemViewType() called with: position = [" + position + "]");
         }
 
-        if (header != null && position == 0) {
+        if (hasHeader() && position == 0) {
             return HEADER_TYPE;
-        } else if (header != null) {
+        } else if (hasHeader()) {
             position--;
         }
         if (footer != null && position == localItems.size() && showFooter) {
@@ -257,7 +276,9 @@ public class LocalItemListAdapter extends RecyclerView.Adapter<RecyclerView.View
         final LocalItem item = localItems.get(position);
         switch (item.getLocalItemType()) {
             case PLAYLIST_LOCAL_ITEM:
-                if (itemViewMode == ItemViewMode.CARD) {
+                if (useItemHandle) {
+                    return LOCAL_BOOKMARK_PLAYLIST_HOLDER_TYPE;
+                } else if (itemViewMode == ItemViewMode.CARD) {
                     return LOCAL_PLAYLIST_CARD_HOLDER_TYPE;
                 } else if (itemViewMode == ItemViewMode.GRID) {
                     return LOCAL_PLAYLIST_GRID_HOLDER_TYPE;
@@ -265,7 +286,9 @@ public class LocalItemListAdapter extends RecyclerView.Adapter<RecyclerView.View
                     return LOCAL_PLAYLIST_HOLDER_TYPE;
                 }
             case PLAYLIST_REMOTE_ITEM:
-                if (itemViewMode == ItemViewMode.CARD) {
+                if (useItemHandle) {
+                    return REMOTE_BOOKMARK_PLAYLIST_HOLDER_TYPE;
+                } else if (itemViewMode == ItemViewMode.CARD) {
                     return REMOTE_PLAYLIST_CARD_HOLDER_TYPE;
                 } else if (itemViewMode == ItemViewMode.GRID) {
                     return REMOTE_PLAYLIST_GRID_HOLDER_TYPE;
@@ -305,7 +328,7 @@ public class LocalItemListAdapter extends RecyclerView.Adapter<RecyclerView.View
         }
         switch (type) {
             case HEADER_TYPE:
-                return new HeaderFooterHolder(header);
+                return new HeaderFooterHolder(headerSupplier.get());
             case FOOTER_TYPE:
                 return new HeaderFooterHolder(footer);
             case LOCAL_PLAYLIST_HOLDER_TYPE:
@@ -314,12 +337,16 @@ public class LocalItemListAdapter extends RecyclerView.Adapter<RecyclerView.View
                 return new LocalPlaylistGridItemHolder(localItemBuilder, parent);
             case LOCAL_PLAYLIST_CARD_HOLDER_TYPE:
                 return new LocalPlaylistCardItemHolder(localItemBuilder, parent);
+            case LOCAL_BOOKMARK_PLAYLIST_HOLDER_TYPE:
+                return new LocalBookmarkPlaylistItemHolder(localItemBuilder, parent);
             case REMOTE_PLAYLIST_HOLDER_TYPE:
                 return new RemotePlaylistItemHolder(localItemBuilder, parent);
             case REMOTE_PLAYLIST_GRID_HOLDER_TYPE:
                 return new RemotePlaylistGridItemHolder(localItemBuilder, parent);
             case REMOTE_PLAYLIST_CARD_HOLDER_TYPE:
                 return new RemotePlaylistCardItemHolder(localItemBuilder, parent);
+            case REMOTE_BOOKMARK_PLAYLIST_HOLDER_TYPE:
+                return new RemoteBookmarkPlaylistItemHolder(localItemBuilder, parent);
             case STREAM_PLAYLIST_HOLDER_TYPE:
                 return new LocalPlaylistStreamItemHolder(localItemBuilder, parent);
             case STREAM_PLAYLIST_GRID_HOLDER_TYPE:
@@ -349,14 +376,14 @@ public class LocalItemListAdapter extends RecyclerView.Adapter<RecyclerView.View
 
         if (holder instanceof LocalItemHolder) {
             // If header isn't null, offset the items by -1
-            if (header != null) {
+            if (hasHeader()) {
                 position--;
             }
 
             ((LocalItemHolder) holder)
                     .updateFromItem(localItems.get(position), recordManager, dateTimeFormatter);
-        } else if (holder instanceof HeaderFooterHolder && position == 0 && header != null) {
-            ((HeaderFooterHolder) holder).view = header;
+        } else if (holder instanceof HeaderFooterHolder && position == 0 && hasHeader()) {
+            ((HeaderFooterHolder) holder).view = headerSupplier.get();
         } else if (holder instanceof HeaderFooterHolder && position == sizeConsideringHeader()
                 && footer != null && showFooter) {
             ((HeaderFooterHolder) holder).view = footer;
@@ -370,10 +397,10 @@ public class LocalItemListAdapter extends RecyclerView.Adapter<RecyclerView.View
             for (final Object payload : payloads) {
                 if (payload instanceof StreamStateEntity) {
                     ((LocalItemHolder) holder).updateState(localItems
-                            .get(header == null ? position : position - 1), recordManager);
+                            .get(hasHeader() ? position - 1 : position), recordManager);
                 } else if (payload instanceof Boolean) {
                     ((LocalItemHolder) holder).updateState(localItems
-                            .get(header == null ? position : position - 1), recordManager);
+                            .get(hasHeader() ? position - 1 : position), recordManager);
                 }
             }
         } else {

@@ -78,14 +78,11 @@
     <string name="downloads_title">ダウンロード</string>
     <string name="error_report_title">不具合報告</string>
     <string name="app_ui_crash">アプリ(UI)がクラッシュしました</string>
-    <string name="info_labels">どんな問題:\\nリクエスト:\\nコンテンツ言語:\\nコンテンツ国:\\nアプリ言語:\\nサービス:\\nGMT 時間:\\nパッケージ:\\nバージョン:\\nOSバージョン:</string>
+    <string name="info_labels">どんな問題:\nリクエスト:\nコンテンツ言語:\nコンテンツ国:\nアプリ言語:\nサービス:\nGMT 時間:\nパッケージ:\nバージョン:\nOSバージョン:</string>
     <string name="title_activity_recaptcha">reCAPTCHA の要求</string>
     <string name="recaptcha_request_toast">reCAPTCHA を要求しました</string>
     <string name="black_theme_title">ブラック</string>
     <string name="all">すべて</string>
-    <string name="short_thousand">k</string>
-    <string name="short_million">M</string>
-    <string name="short_billion">B</string>
     <string name="open_in_popup_mode">ポップアップモードで開く</string>
     <string name="msg_popup_permission">ポップアップモードで開くには
 \n権限の許可が必要です</string>
@@ -94,7 +91,7 @@
     <string name="default_video_format_title">デフォルトの動画形式</string>
     <string name="default_popup_resolution_title">デフォルトの画質 (ポップアップ表示)</string>
     <string name="show_higher_resolutions_title">より高い画質を表示</string>
-    <string name="show_higher_resolutions_summary">2K/4K動画は一部のデバイスでのみ再生できます</string>
+    <string name="show_higher_resolutions_summary">1440p/4K動画は一部のデバイスでのみ再生できます</string>
     <string name="controls_background_title">バックグラウンド</string>
     <string name="controls_popup_title">ポップアップ</string>
     <string name="clear">消去</string>
@@ -390,7 +387,7 @@
     <string name="overwrite_failed">ファイルを上書きできません</string>
     <string name="download_already_pending">同じファイル名のダウンロードが既に進行中です</string>
     <string name="error_postprocessing_stopped">ファイルの作業中に NewPipe が閉じられました</string>
-    <string name="error_insufficient_storage">デバイスに空き容量がありません</string>
+    <string name="error_insufficient_storage_left">デバイスに空き容量がありません</string>
     <string name="error_progress_lost">ファイルが削除されたため、進行状況が失われました</string>
     <string name="confirm_prompt">ダウンロード履歴、またはダウンロードしたファイルを消去しますか\?</string>
     <string name="enable_queue_limit">ダウンロード キューの制限</string>
@@ -418,7 +415,6 @@
     <plurals name="listening">
         <item quantity="other">%s 人が聴取中</item>
     </plurals>
-    <string name="localization_changes_requires_app_restart">アプリを再起動すると、言語が変更されます</string>
     <string name="seek_duration_title">高速早送り/巻き戻し間隔</string>
     <string name="peertube_instance_url_title">PeerTube インスタンス</string>
     <string name="peertube_instance_url_summary">PeerTube インスタンスを選択する</string>
@@ -501,9 +497,8 @@
     <string name="restricted_video">この動画には年齢制限があります。
 \n
 \n閲覧したい場合、設定から \"%1$s\" を有効化してください。</string>
-    <string name="remove_watched_popup_warning">プレイリストに追加される前も追加された後も視聴した動画はプレイリストから削除されます。
-\nよろしいですか？この操作は元に戻せません！</string>
-    <string name="remove_watched_popup_yes_and_partially_watched_videos">はい、部分的に視聴した動画も削除します</string>
+    <string name="remove_watched_popup_warning">プレイリストに追加される前も追加された後も視聴した動画はプレイリストから削除されます。 \nよろしいですか？この操作は元に戻せません！</string>
+    <string name="remove_watched_popup_partially_watched_streams">はい、部分的に視聴した動画も削除します</string>
     <string name="remove_watched_popup_title">視聴済みの動画を削除しますか？</string>
     <string name="remove_watched">視聴済みを削除</string>
     <string name="show_original_time_ago_summary">サービスのオリジナルのテキストが生放送に表示されます</string>
@@ -531,7 +526,7 @@
     <string name="unsupported_url_dialog_message">URL を認識できませんでした。他のアプリで開きますか？</string>
     <string name="notification_scale_to_square_image_summary">通知に表示されるサムネイルを 16:9 から正方形にします</string>
     <string name="notification_scale_to_square_image_title">サムネイルを正方形にする</string>
-    <string name="notification_actions_summary">以下をタップして通知のアクションを編集します。右側にあるチェックボックスを使用してコンパクトな通知に表示するものを 3 つまで選択します</string>
+    <string name="notification_actions_summary">以下をタップして通知のアクションを編集します。右側にあるチェックボックスを使用してコンパクトな通知に表示するものを３つまで選択します。</string>
     <string name="notification_actions_at_most_three">コンパクトな通知に表示されるアクションは 3 つまで選ぶことができます！</string>
     <string name="notification_action_4_title">5 番目のアクションボタン</string>
     <string name="notification_action_3_title">4 番目のアクションボタン</string>
@@ -616,7 +611,6 @@
     <string name="off">オフ</string>
     <string name="on">オン</string>
     <string name="tablet_mode_title">タブレットモード</string>
-    <string name="service_provides_reason">%s がこの理由を提示:</string>
     <string name="dont_show">表示しない</string>
     <string name="low_quality_smaller">低品質 (小)</string>
     <string name="high_quality_larger">高品質 (大)</string>
@@ -632,14 +626,12 @@
         <item quantity="other">%1$s つのダウンロードを削除しました</item>
     </plurals>
     <plurals name="download_finished_notification">
-        <item quantity="other">%s つのダウンロードが完了しました</item>
+        <item quantity="other">%s 個のダウンロードが完了しました</item>
     </plurals>
-    <string name="show_image_indicators_summary">ピカソは、画像の上に、画像の出所を識別する色彩記章を表示します: 赤はネットワーク、青はディスク、緑はメモリ</string>
-    <string name="show_image_indicators_title">画像に標識を表示</string>
     <string name="processing_may_take_a_moment">処理中… 少し時間がかかるかもしれません</string>
     <string name="manual_update_description">新しいバージョンを手動で確認します</string>
     <string name="checking_updates_toast">アップデートを確認中…</string>
-    <string name="manual_update_title">アップデートを確認</string>
+    <string name="check_for_updates">アップデートを確認</string>
     <string name="enqueue_next_stream">次をキューに追加</string>
     <string name="enqueued_next">次をキューに追加しました</string>
     <string name="detail_heart_img_view_description">クリエイターの心をこめて</string>
@@ -791,6 +783,29 @@
     <string name="share_playlist_content_details">%1$s
 \n%2$s</string>
     <string name="share_playlist">プレイリストを共有</string>
-    <string name="share_playlist_with_titles_message">プレイリスト名やビデオタイトルなどの詳細を含むプレイリスト、またはビデオURLのみのシンプルなリストとしてプレイリストを共有します</string>
     <string name="video_details_list_item">- %1$s： %2$s</string>
+    <plurals name="replies">
+        <item quantity="other">%sの返信</item>
+    </plurals>
+    <string name="show_more">もっと見る</string>
+    <string name="show_less">表示を少なくする</string>
+    <string name="notification_actions_summary_android13">以下の通知アクションをタップして編集します。 最初の３つのアクション （再生/一時停止、前へ、次へ）はシステムによって設定されており、カスタマイズすることはできません。</string>
+    <string name="error_insufficient_storage">デバイスの空き容量が不足しています</string>
+    <string name="settings_category_backup_restore_title">バックアップと復元</string>
+    <string name="yes">はい</string>
+    <string name="no">いいえ</string>
+    <string name="auto_update_check_description">NewPipe は定期的に新しいバージョンを自動的にチェックし、更新可能になると通知します。
+\n有効にしますか？</string>
+    <string name="reset_settings_title">設定をリセット</string>
+    <string name="reset_settings_summary">全ての設定をデフォルト状態にリセットします</string>
+    <string name="reset_all_settings">全ての設定をリセットすると、優先設定が全て破棄され、アプリが再起動します。
+\n
+\n続行しますか？</string>
+    <string name="import_settings_vulnerable_format">インポートされているエクスポートの設定は、NewPipe 0.27.0以降は非推奨であった脆弱な形式を使用します。 インポートされているエクスポートは信頼できる情報源からであり、将来的にはNewPipe 0.27.0かこれより新しいバージョンから得られるエクスポートのみを優先して使用します。 この脆弱な形式で設定をインポートするための対応はすぐに完全に削除され、新しいバージョンからエクスポートの設定をインポートすることは出来ません。</string>
+    <string name="share_playlist_as_youtube_temporary_playlist">YouTubeの一時的なプレイリストとして共有</string>
+    <string name="audio_track_type_secondary">二次的</string>
+    <string name="kao_dialog_warning">Google は、2026/2027 年から、認定 Android デバイス上のすべてのアプリについて、開発者が個人の身元情報を直接 Google に提出することを必須にすると発表しました。本アプリの開発者はこの要件に同意していないため、このアプリはその時点以降、認定 Android デバイス上で動作しなくなります。</string>
+    <string name="kao_dialog_more_info">詳細</string>
+    <string name="kao_solution">解決</string>
+    <string name="short_billion">%sB</string>
 </resources>

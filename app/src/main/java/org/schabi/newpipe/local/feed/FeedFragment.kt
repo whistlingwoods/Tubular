@@ -44,15 +44,17 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.evernote.android.state.State
 import com.xwray.groupie.GroupieAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.OnItemClickListener
 import com.xwray.groupie.OnItemLongClickListener
-import icepick.State
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
+import java.time.OffsetDateTime
+import java.util.function.Consumer
 import org.schabi.newpipe.NewPipeDatabase
 import org.schabi.newpipe.R
 import org.schabi.newpipe.database.feed.model.FeedGroupEntity
@@ -74,6 +76,7 @@ import org.schabi.newpipe.ktx.slideUp
 import org.schabi.newpipe.local.feed.item.StreamItem
 import org.schabi.newpipe.local.feed.service.FeedLoadService
 import org.schabi.newpipe.local.subscription.SubscriptionManager
+import org.schabi.newpipe.ui.emptystate.setEmptyStateComposable
 import org.schabi.newpipe.util.DeviceUtils
 import org.schabi.newpipe.util.Localization
 import org.schabi.newpipe.util.NavigationHelper
@@ -81,8 +84,6 @@ import org.schabi.newpipe.util.ThemeHelper.getGridSpanCountStreams
 import org.schabi.newpipe.util.ThemeHelper.getItemViewMode
 import org.schabi.newpipe.util.ThemeHelper.resolveDrawable
 import org.schabi.newpipe.util.ThemeHelper.shouldUseGridLayout
-import java.time.OffsetDateTime
-import java.util.function.Consumer
 
 class FeedFragment : BaseStateFragment<FeedState>() {
     private var _feedBinding: FragmentFeedBinding? = null
@@ -91,7 +92,10 @@ class FeedFragment : BaseStateFragment<FeedState>() {
     private val disposables = CompositeDisposable()
 
     private lateinit var viewModel: FeedViewModel
-    @State @JvmField var listState: Parcelable? = null
+
+    @State
+    @JvmField
+    var listState: Parcelable? = null
 
     private var groupId = FeedGroupEntity.GROUP_ALL_ID
     private var groupName = ""
@@ -132,6 +136,7 @@ class FeedFragment : BaseStateFragment<FeedState>() {
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         // super.onViewCreated() calls initListeners() which require the binding to be initialized
         _feedBinding = FragmentFeedBinding.bind(rootView)
+        feedBinding.emptyStateView.setEmptyStateComposable()
         super.onViewCreated(rootView, savedInstanceState)
 
         val factory = FeedViewModel.getFactory(requireContext(), groupId)
@@ -149,7 +154,6 @@ class FeedFragment : BaseStateFragment<FeedState>() {
                 if (newState == RecyclerView.SCROLL_STATE_IDLE &&
                     !recyclerView.canScrollVertically(-1)
                 ) {
-
                     if (tryGetNewItemsLoadedButton()?.isVisible == true) {
                         hideNewItemsLoaded(true)
                     }
@@ -202,6 +206,7 @@ class FeedFragment : BaseStateFragment<FeedState>() {
     // Menu
     // /////////////////////////////////////////////////////////////////////////
 
+    @Deprecated("Deprecated in Java")
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
 
@@ -212,6 +217,7 @@ class FeedFragment : BaseStateFragment<FeedState>() {
         inflater.inflate(R.menu.menu_feed_fragment, menu)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.menu_item_feed_help) {
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
@@ -253,7 +259,7 @@ class FeedFragment : BaseStateFragment<FeedState>() {
             viewModel.getShowFutureItemsFromPreferences()
         )
 
-        AlertDialog.Builder(context!!)
+        AlertDialog.Builder(requireContext())
             .setTitle(R.string.feed_hide_streams_title)
             .setMultiChoiceItems(dialogItems, checkedDialogItems) { _, which, isChecked ->
                 checkedDialogItems[which] = isChecked
@@ -267,9 +273,15 @@ class FeedFragment : BaseStateFragment<FeedState>() {
             .show()
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onDestroyOptionsMenu() {
         super.onDestroyOptionsMenu()
-        activity?.supportActionBar?.subtitle = null
+        if (
+            (groupName != "") &&
+            (activity?.supportActionBar?.subtitle == groupName)
+        ) {
+            activity?.supportActionBar?.subtitle = null
+        }
     }
 
     override fun onDestroy() {
@@ -281,7 +293,13 @@ class FeedFragment : BaseStateFragment<FeedState>() {
         }
 
         super.onDestroy()
-        activity?.supportActionBar?.subtitle = null
+
+        if (
+            (groupName != "") &&
+            (activity?.supportActionBar?.subtitle == groupName)
+        ) {
+            activity?.supportActionBar?.subtitle = null
+        }
     }
 
     override fun onDestroyView() {
@@ -376,8 +394,13 @@ class FeedFragment : BaseStateFragment<FeedState>() {
             if (item is StreamItem && !isRefreshing) {
                 val stream = item.streamWithState.stream
                 NavigationHelper.openVideoDetailFragment(
-                    requireContext(), fm,
-                    stream.serviceId, stream.url, stream.title, null, false
+                    requireContext(),
+                    fm,
+                    stream.serviceId,
+                    stream.url,
+                    stream.title,
+                    null,
+                    false
                 )
             }
         }
@@ -489,14 +512,15 @@ class FeedFragment : BaseStateFragment<FeedState>() {
     ) {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
         val isFastFeedModeEnabled = sharedPreferences.getBoolean(
-            getString(R.string.feed_use_dedicated_fetch_method_key), false
+            getString(R.string.feed_use_dedicated_fetch_method_key),
+            false
         )
 
         val builder = AlertDialog.Builder(requireContext())
             .setTitle(R.string.feed_load_error)
             .setPositiveButton(R.string.unsubscribe) { _, _ ->
                 SubscriptionManager(requireContext())
-                    .deleteSubscription(subscriptionEntity.serviceId, subscriptionEntity.url)
+                    .deleteSubscription(subscriptionEntity.serviceId, subscriptionEntity.url!!)
                     .subscribe()
                 handleItemsErrors(nextItemsErrors)
             }
@@ -524,7 +548,8 @@ class FeedFragment : BaseStateFragment<FeedState>() {
     private fun updateRelativeTimeViews() {
         updateRefreshViewState()
         groupAdapter.notifyItemRangeChanged(
-            0, groupAdapter.itemCount,
+            0,
+            groupAdapter.itemCount,
             StreamItem.UPDATE_RELATIVE_TIME
         )
     }
@@ -549,7 +574,7 @@ class FeedFragment : BaseStateFragment<FeedState>() {
 
             var typeface = Typeface.DEFAULT
             var backgroundSupplier = { ctx: Context ->
-                resolveDrawable(ctx, R.attr.selectableItemBackground)
+                resolveDrawable(ctx, android.R.attr.selectableItemBackground)
             }
             if (doCheck) {
                 // If the uploadDate is null or true we should highlight the item
@@ -562,7 +587,7 @@ class FeedFragment : BaseStateFragment<FeedState>() {
                         LayerDrawable(
                             arrayOf(
                                 resolveDrawable(ctx, R.attr.dashed_border),
-                                resolveDrawable(ctx, R.attr.selectableItemBackground)
+                                resolveDrawable(ctx, android.R.attr.selectableItemBackground)
                             )
                         )
                     }

@@ -18,12 +18,10 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.grack.nanojson.JsonParser
 import com.grack.nanojson.JsonParserException
+import java.io.IOException
 import org.schabi.newpipe.extractor.downloader.Response
 import org.schabi.newpipe.extractor.exceptions.ReCaptchaException
-import org.schabi.newpipe.util.ReleaseVersionUtil.coerceUpdateCheckExpiry
-import org.schabi.newpipe.util.ReleaseVersionUtil.isLastUpdateCheckExpired
-import org.schabi.newpipe.util.ReleaseVersionUtil.isReleaseApk
-import java.io.IOException
+import org.schabi.newpipe.util.ReleaseVersionUtil
 
 class NewVersionWorker(
     context: Context,
@@ -48,7 +46,8 @@ class NewVersionWorker(
                 // Show toast stating that the app is up-to-date if the update check was manual.
                 ContextCompat.getMainExecutor(applicationContext).execute {
                     Toast.makeText(
-                        applicationContext, R.string.app_update_unavailable_toast,
+                        applicationContext,
+                        R.string.app_update_unavailable_toast,
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -60,7 +59,11 @@ class NewVersionWorker(
         val intent = Intent(Intent.ACTION_VIEW, apkLocationUrl?.toUri())
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         val pendingIntent = PendingIntentCompat.getActivity(
-            applicationContext, 0, intent, 0, false
+            applicationContext,
+            0,
+            intent,
+            0,
+            false
         )
         val channelId = applicationContext.getString(R.string.app_update_notification_channel_id)
         val notificationBuilder = NotificationCompat.Builder(applicationContext, channelId)
@@ -73,18 +76,21 @@ class NewVersionWorker(
             )
             .setContentText(
                 applicationContext.getString(
-                    R.string.app_update_available_notification_text, versionName
+                    R.string.app_update_available_notification_text,
+                    versionName
                 )
             )
 
         val notificationManager = NotificationManagerCompat.from(applicationContext)
-        notificationManager.notify(2000, notificationBuilder.build())
+        if (notificationManager.areNotificationsEnabled()) {
+            notificationManager.notify(2000, notificationBuilder.build())
+        }
     }
 
     @Throws(IOException::class, ReCaptchaException::class)
     private fun checkNewVersion() {
         // Check if the current apk is a github one or not.
-        if (!isReleaseApk()) {
+        if (!ReleaseVersionUtil.isReleaseApk) {
             return
         }
 
@@ -93,7 +99,7 @@ class NewVersionWorker(
             // Check if the last request has happened a certain time ago
             // to reduce the number of API requests.
             val expiry = prefs.getLong(applicationContext.getString(R.string.update_expiry_key), 0)
-            if (!isLastUpdateCheckExpired(expiry)) {
+            if (!ReleaseVersionUtil.isLastUpdateCheckExpired(expiry)) {
                 return
             }
         }
@@ -108,7 +114,7 @@ class NewVersionWorker(
         try {
             // Store a timestamp which needs to be exceeded,
             // before a new request to the API is made.
-            val newExpiry = coerceUpdateCheckExpiry(response.getHeader("expires"))
+            val newExpiry = ReleaseVersionUtil.coerceUpdateCheckExpiry(response.getHeader("expires"))
             prefs.edit {
                 putLong(applicationContext.getString(R.string.update_expiry_key), newExpiry)
             }

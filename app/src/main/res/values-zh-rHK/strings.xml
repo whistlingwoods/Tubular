@@ -44,7 +44,7 @@
     <string name="main_bg_subtitle">撳放大鏡開始。</string>
     <string name="content">內容</string>
     <string name="show_age_restricted_content_title">顯示年齡設限嘅內容</string>
-    <string name="duration_live">實況</string>
+    <string name="duration_live">直播</string>
     <string name="general_error">問題</string>
     <string name="could_not_load_thumbnails">載入唔晒全部縮圖</string>
     <string name="parsing_error">解析唔到網站</string>
@@ -80,15 +80,13 @@
     <string name="open_in_popup_mode">以浮面模式開啟</string>
     <string name="default_popup_resolution_title">預設浮面播放器嘅解像度</string>
     <string name="show_higher_resolutions_title">顯示更高解像度</string>
-    <string name="show_higher_resolutions_summary">得某啲機先播到 2K/4K 影片</string>
+    <string name="show_higher_resolutions_summary">得某啲機先播到 1440p/4K 影片</string>
     <string name="default_video_format_title">預設嘅影片檔案格式</string>
     <string name="black_theme_title">紅日降</string>
     <string name="popup_playing_toast">浮面播緊</string>
     <string name="all">全部嘢</string>
     <string name="app_ui_crash">App/界面閃退</string>
-    <string name="info_labels">經過：\\n請求：\\n內容語言：\\n內容國家：\\nApp 語言：\\n服務：\\nGMT 時間：\\n封裝：\\n版本：\\nOS 版本：</string>
-    <string name="short_thousand">千</string>
-    <string name="short_million">百萬</string>
+    <string name="info_labels">經過：\n請求：\n內容語言：\n內容國家：\nApp 語言：\n服務：\nGMT 時間：\n封裝：\n版本：\nOS 版本：</string>
     <string name="title_activity_recaptcha">reCAPTCHA 考驗</string>
     <string name="msg_popup_permission">以浮面模式開啟
 \n有呢個權限至得</string>
@@ -103,7 +101,6 @@
     <string name="disabled">不適用</string>
     <string name="clear">抹走</string>
     <string name="best_resolution">最佳解像度</string>
-    <string name="short_billion">十億</string>
     <string name="title_activity_about">關於 NewPipe</string>
     <string name="title_licenses">第三方版權協議</string>
     <string name="copyright" formatted="true">© %1$s %2$s 版權所有，根據 %3$s 嘅條款授權</string>
@@ -155,7 +152,7 @@
     <string name="open_with">開啟方式係</string>
     <string name="search_showing_result_for">搜尋到嘅嘢係：%s</string>
     <string name="notification_action_4_title">第五粒動作掣</string>
-    <string name="notification_actions_summary">撳下面嘅掣去更改對應嘅通知動作。用右手邊嘅格仔剔選最多三個，擺喺精簡通知度</string>
+    <string name="notification_actions_summary">撳下面嘅掣去更改對應嘅通知動作。用右手邊嘅格仔剔選最多三個，擺落去精簡通知度。</string>
     <string name="notification_actions_at_most_three">精簡通知最多淨係擺到三個動作！</string>
     <string name="notification_action_repeat">循環播放</string>
     <string name="show_comments_title">顯示留言</string>
@@ -288,7 +285,7 @@
     <string name="playback_tempo">節奏</string>
     <string name="playback_speed_control">播放速度控掣</string>
     <string name="systems_language">系統預設</string>
-    <string name="manual_update_title">檢查有冇更新</string>
+    <string name="check_for_updates">檢查有冇更新</string>
     <string name="app_language_title">個 App 用咩語言</string>
     <string name="remove_watched">睇咗嗰啲剷咗佢</string>
     <string name="remove_watched_popup_title">係咪要剷走睇咗嘅影片？</string>
@@ -326,7 +323,6 @@
     <string name="main_page_content_summary">頭版要擺放邊啲分頁</string>
     <string name="main_page_content_swipe_remove">打橫掃走啲項目去剷走佢</string>
     <string name="blank_page_summary">空白頁</string>
-    <string name="localization_changes_requires_app_restart">重新開過個 app 之後就會轉新語言</string>
     <string name="trending">時興</string>
     <string name="top_50">頭 50 位</string>
     <string name="new_and_hot">最新同大熱</string>
@@ -454,7 +450,7 @@
     <string name="error_path_creation">建立唔到呢個目的地資料夾</string>
     <string name="error_ssl_exception">建立唔到安全連線</string>
     <string name="start_here_on_background">喺幕後開始播放</string>
-    <string name="error_insufficient_storage">部機冇晒位</string>
+    <string name="error_insufficient_storage_left">部機冇晒位</string>
     <string name="max_retry_msg">頂櫳重試幾多次</string>
     <string name="pause_downloads_on_mobile_desc">若然有機會用到流動數據嘅時候，可能會用得著，雖則有啲下載冇得暫停</string>
     <string name="enable_queue_limit">輪住嚟下載</string>
@@ -490,7 +486,6 @@
     <string name="content_not_supported">NewPipe 仲未支援到呢樣。
 \n
 \n希望未來會喺日後嘅版本支援啦。</string>
-    <string name="service_provides_reason">%s 話理由如下：</string>
     <string name="no_appropriate_file_manager_message">搵唔到合適嘅檔案總管進行呢個動作。
 \n請安裝一個檔案管理程式，又或者試下喺下載設定度停用「%s」</string>
     <string name="no_appropriate_file_manager_message_android_10">搵唔到合適嘅檔案總管進行呢個動作。
@@ -516,7 +511,7 @@
     <string name="metadata_host">主機</string>
     <string name="show_hold_to_append_summary">喺影片詳情撳一下「幕後播」或「浮面播」個掣嘅時候顯示提示</string>
     <string name="title_activity_history">紀錄</string>
-    <string name="action_history">歷史紀錄</string>
+    <string name="action_history">紀錄</string>
     <string name="enqueue_next_stream">攝咗做下個播</string>
     <string name="enable_leak_canary_summary">記憶體洩露監測喺傾卸堆疊嘢嘅時候，或者會導致個 app 冇反應</string>
     <string name="drawer_close">閂埋選單</string>
@@ -543,7 +538,7 @@
     <string name="crash_the_app">令個 app 閃退</string>
     <string name="show_error_snackbar">顯示一則錯誤橫條</string>
     <string name="create_error_notification">建立一則出現錯誤通知</string>
-    <string name="remove_watched_popup_yes_and_partially_watched_videos">好，包括埋睇過但未睇晒嘅影片</string>
+    <string name="remove_watched_popup_partially_watched_streams">好，包括埋睇過但未睇晒嘅影片</string>
     <string name="new_seek_duration_toast">礙於 ExoPlayer 所限，快轉長度經已改為 %d 秒</string>
     <string name="hash_channel_name">影片雜湊通知</string>
     <string name="enqueued">排咗去隊尾</string>
@@ -560,8 +555,7 @@
     <string name="downloads_storage_ask_summary">每次下載都會問你要儲存去邊。
 \n如果你想儲存落外置 SD 卡入面，請啟用系統資料夾揀選器 (SAF)</string>
     <string name="downloads_storage_use_saf_title">用系統資料夾揀選器 (SAF)</string>
-    <string name="remove_watched_popup_warning">加入去播放清單之前或之後睇過嘅影片都會剷走個囉喎。
-\n你肯定？剷走咗冇得掹個囉喎！</string>
+    <string name="remove_watched_popup_warning">加入去播放清單之前或之後睇過嘅影片都會剷走個囉喎。 \n你肯定？剷走咗冇得掹個囉喎！</string>
     <string name="downloads_storage_use_saf_summary">「儲存空間存取框架」係畀你下載落外置 SD 卡嗰度</string>
     <string name="downloads_storage_use_saf_summary_api_29">Android 10 打上，局住要用「儲存空間存取框架」</string>
     <string name="progressive_load_interval_exoplayer_default">ExoPlayer 預設值</string>
@@ -668,9 +662,7 @@
     <string name="feed_create_new_group_button_title">新</string>
     <string name="feed_group_dialog_delete_message">你係咪要刪除呢個谷？</string>
     <string name="feed_group_show_only_ungrouped_subscriptions">淨係顯示未成谷嘅訂閱</string>
-    <string name="show_image_indicators_summary">啲圖都要騷 Picasso 三色碼顯示源頭：紅碼係網絡上高落嚟，藍碼係儲存喺磁碟本地，綠碼係潛伏喺記憶體中</string>
     <string name="show_original_time_ago_summary">服務原本嘅字會騷返喺串流項目上面</string>
-    <string name="show_image_indicators_title">影像要推三色碼</string>
     <string name="disable_media_tunneling_summary">若果播片嘅時候窒下窒下或者黑畫面，就停用多媒體隧道啦。</string>
     <string name="import_youtube_instructions">點樣用 Google 匯出嚟匯入 YouTube 訂閱：
 \n
@@ -721,7 +713,7 @@
     <string name="right_gesture_control_summary">揀選右手邊播放器螢幕嘅手勢</string>
     <string name="right_gesture_control_title">右手邊手勢動作</string>
     <string name="brightness">調整光暗度</string>
-    <string name="volume">調整大細聲</string>
+    <string name="volume">音量</string>
     <string name="none">乜都唔使做</string>
     <string name="prefer_original_audio_title">優先揀原聲</string>
     <string name="prefer_descriptive_audio_title">優先揀旁述</string>
@@ -775,7 +767,6 @@
     <string name="rewind">跳後</string>
     <string name="replay">重播</string>
     <string name="feed_fetch_channel_tabs_summary">更新摘要嘅時候要攞邊啲分頁返嚟。若果頻道用快速模式更新，就橫豎都無相干嘞。</string>
-    <string name="share_playlist_with_titles_message">分享播放清單要詳細包含播放清單個名同埋入面啲片名，定簡單得啲影片嘅 URL</string>
     <string name="image_quality_medium">一般畫質</string>
     <string name="metadata_uploader_avatars">上載者嘅頭像</string>
     <string name="metadata_banners">橫額</string>
@@ -793,4 +784,21 @@
     <string name="channel_tab_channels">頻道</string>
     <string name="previous_stream">上一個串流</string>
     <string name="channel_tab_livestreams">直播</string>
+    <plurals name="replies">
+        <item quantity="other">%s 個回覆</item>
+    </plurals>
+    <string name="show_less">摺埋</string>
+    <string name="show_more">拉開</string>
+    <string name="notification_actions_summary_android13">撳下面嘅掣去更改對應嘅通知動作。頭三個動作 (播放/暫停、上一個、下一個) 系統預設咗，冇得揀。</string>
+    <string name="error_insufficient_storage">部機冇晒位</string>
+    <string name="yes">要</string>
+    <string name="auto_update_check_description">NewPipe 可以周不時自動睇過有冇新版本，一出咗就通知您。
+\n您想唔想啟用呢個功能？</string>
+    <string name="reset_settings_title">推翻所有設定</string>
+    <string name="reset_all_settings">推翻所有設定就會全盤抹走晒您喜好過嘅設定，然後重新開過個 app 個囉噃。
+\n
+\n您確定要不惜一切推倒重來？</string>
+    <string name="settings_category_backup_restore_title">備份與還原</string>
+    <string name="no">唔使喇</string>
+    <string name="reset_settings_summary">顛覆所有設定，光復成預設值重新開始</string>
 </resources>

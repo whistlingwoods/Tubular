@@ -26,7 +26,7 @@
     <string name="default_resolution_title">ডিফল্ট রেজ্যুলেশন</string>
     <string name="default_popup_resolution_title">ডিফল্ট পপআপ রেজ্যুলেশন</string>
     <string name="show_higher_resolutions_title">উচ্চ রেজ্যুলেশন দেখাও</string>
-    <string name="show_higher_resolutions_summary">শুধু কিছু ডিভাইস 2K/4K ভিডিও চালাতে পারে</string>
+    <string name="show_higher_resolutions_summary">শুধু কিছু ডিভাইস 1440p/4K ভিডিও চালাতে পারে</string>
     <string name="play_with_kodi_title">Kodi এর মাধ্যমে চালাও</string>
     <string name="kore_not_found">হারানো কোর ইনস্টল করবেন\?</string>
     <string name="show_play_with_kodi_title">\"Kodi দিয়ে চালাও\" অপশন দেখাও</string>
@@ -82,9 +82,6 @@
     <string name="video">ভিডিও</string>
     <string name="audio">অডিও</string>
     <string name="retry">পুনরায় চেষ্টা করো</string>
-    <string name="short_thousand">হা</string>
-    <string name="short_million">M</string>
-    <string name="short_billion">বি</string>
     <!-- Missions -->
     <string name="start">শুরু</string>
     <string name="pause">বিরতি</string>
@@ -106,7 +103,7 @@
     <string name="title_activity_recaptcha">reCAPTCHA চ্যালেঞ্জ</string>
     <string name="recaptcha_request_toast">reCAPTCHA চ্যালেঞ্জ অনুরোধ করা হয়েছে</string>
     <!-- End of GigaGet's Strings -->
-    <string name="info_labels">কি:\\nঅনুরোধ:\\nকন্টেন্ট ভাষা:\\nসার্ভিস:\\nসময়(GMT এ):\\nপ্যাকেজ:\\nসংস্করণ:\\nওএস সংস্করণ:\\nআইপি পরিসর:</string>
+    <string name="info_labels">কি:\nঅনুরোধ:\nকন্টেন্ট ভাষা:\nসার্ভিস:\nসময়(GMT এ):\nপ্যাকেজ:\nসংস্করণ:\nওএস সংস্করণ:\nআইপি পরিসর:</string>
     <string name="controls_download_desc">স্ট্রিম ফাইল ডাউনলোড করুন</string>
     <string name="show_info">তথ্য দেখাও</string>
     <string name="fragment_feed_title">নতুন যা কিছু</string>
@@ -165,7 +162,7 @@
     <string name="stop">বন্ধ করুন</string>
     <string name="delete_downloaded_files">ডাউনলোড করা ফাইলগুলো ডিলিট করুন</string>
     <string name="clear_download_history">ডাওন লোড ইতিহাস মুছুন</string>
-    <string name="error_insufficient_storage">ডিভাইস এ স্পেস নেই</string>
+    <string name="error_insufficient_storage_left">ডিভাইস এ স্পেস নেই</string>
     <string name="error_http_not_found">পাওয়া যায় নি</string>
     <string name="error_unknown_host">সার্ভার পাওয়া যায় নি</string>
     <string name="show_error">এরর দেখান</string>
@@ -297,7 +294,7 @@
     <string name="notification_scale_to_square_image_title">থাম্বনেল ১:১ অনুপাতে সেট করো</string>
     <string name="systems_language">সিস্টেম ডিফল্ট</string>
     <string name="bookmark_playlist">প্লেলিস্ট বুকমার্ক করুন</string>
-    <string name="feed_use_dedicated_fetch_method_title">"যখন পর্যাপ্ত  নিবেদিত ফিড থেকে ডাটা সংগ্রহ করুন"</string>
+    <string name="feed_use_dedicated_fetch_method_title">যখন পর্যাপ্ত নিবেদিত ফিড থেকে ডাটা সংগ্রহ করুন</string>
     <string name="feed_update_threshold_option_always_update">সবসময় হালনগাদ করুন</string>
     <string name="feed_update_threshold_summary">শেষ হালনাগাদের পর একটি সাবস্ক্রিপশনের আগের সময় সেকেলে বিবেচিত — %s</string>
     <string name="feed_update_threshold_title">ফিড হালনাগাদ প্রবেশস্থল</string>
@@ -317,11 +314,11 @@
     <string name="feed_groups_header_title">চ্যানেল গ্রুপ</string>
     <plurals name="days">
         <item quantity="one">%d দিন</item>
-        <item quantity="other">"%d   দিন"</item>
+        <item quantity="other">%d দিন</item>
     </plurals>
     <plurals name="hours">
         <item quantity="one">%d ঘন্টা</item>
-        <item quantity="other">"%d  ঘন্টা"</item>
+        <item quantity="other">%d ঘন্টা</item>
     </plurals>
     <plurals name="minutes">
         <item quantity="one">%d মিনিট</item>
@@ -401,7 +398,7 @@
     <string name="default_content_country_title">কনটেন্টের জন্য পূর্বনির্ধারিত দেশ</string>
     <string name="external_player_unsupported_link_type">বাইরের প্লেয়ারসমূহ এ ধরনের লিঙ্কসমূহ সমর্থন করে না</string>
     <string name="msg_calculating_hash">হ্যাশ হিসাব করা হচ্ছে</string>
-    <string name="manual_update_title">আপডেট চেক করো</string>
+    <string name="check_for_updates">আপডেট চেক করো</string>
     <plurals name="watching">
         <item quantity="one">%s জন দেখছে</item>
         <item quantity="other">%s জন দেখছে</item>

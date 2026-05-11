@@ -66,7 +66,6 @@
     <string name="new_and_hot">Noos e Populares</string>
     <string name="top_50">Sos mègius 50</string>
     <string name="trending">Tendèntzias</string>
-    <string name="localization_changes_requires_app_restart">Sa limba at a mudare a pustis chi as a torrare a allùghere s\'aplicatzione</string>
     <string name="error_unable_to_load_comments">Carrigamentu de sos cummentos fallidu</string>
     <string name="import_settings">Cheres fintzas importare sas impostatziones\?</string>
     <string name="override_current_data">Custu at a subraiscrìere sas impostatziones tuas de como.</string>
@@ -166,9 +165,6 @@
     </plurals>
     <string name="no_subscribers">Perunu iscritu</string>
     <string name="drawer_header_description">Allughe/istuda su servìtziu. Ischertadu como:</string>
-    <string name="short_billion">Mrd</string>
-    <string name="short_million">Mlln</string>
-    <string name="short_thousand">mìg</string>
     <string name="retry">Torra a proare</string>
     <string name="audio">Àudio</string>
     <string name="video">Vìdeu</string>
@@ -228,7 +224,7 @@
     <string name="export_ongoing">Esportende…</string>
     <string name="msg_popup_permission">B\'at bisòngiu de custu permissu pro
 \nabèrrere sa modalidade ventanedda</string>
-    <string name="info_labels">Ite:\\nRechesta:\\nLimba de su cuntenutu\\nIstadu de su cuntenutu:\\nLimba de s\'aplicatzione:\\nServìtziu:\\nOràriu GMT:\\nPachete:\\nVersione:\\nVersione SO:</string>
+    <string name="info_labels">Ite:\nRechesta:\nLimba de su cuntenutu\nIstadu de su cuntenutu:\nLimba de s\'aplicatzione:\nServìtziu:\nOràriu GMT:\nPachete:\nVersione:\nVersione SO:</string>
     <string name="error_snackbar_message">A dolu mannu b\'at àpidu carchi problema.</string>
     <string name="search_history_deleted">Cronologia de chirca iscantzellada</string>
     <string name="restricted_video">Custu vìdeu tenet unu lìmite de edade.
@@ -288,10 +284,9 @@
         <item quantity="other">%d segundu</item>
     </plurals>
     <string name="new_seek_duration_toast">Pro more de sos lìmites de ExoPlayer sa longària de s\'iscostiamentu lestru est istada impostada a %d segundos</string>
-    <string name="remove_watched_popup_yes_and_partially_watched_videos">Eja, e fintzas sos vìdeos pompiados in parte</string>
-    <string name="remove_watched_popup_warning">Sos vìdeos pompiados in antis e a pustis de los àere annànghidos a s\'iscalita ant a èssere bogados.
-\n Seguru ses\? Custu no est reversìbile!</string>
-    <string name="remove_watched_popup_title">Bogare sos elementos pompiados\?</string>
+    <string name="remove_watched_popup_partially_watched_streams">Eja, e fintzas sos vìdeos pompiados in parte</string>
+    <string name="remove_watched_popup_warning">Sos vìdeos pompiados in antis e a pustis de los àere annànghidos a s\'iscalita ant a èssere bogados. \n Seguru ses? Custu no est reversìbile!</string>
+    <string name="remove_watched_popup_title">Bogare sos elementos pompiados?</string>
     <string name="remove_watched">Boga sos elementos pompiados</string>
     <string name="systems_language">Predefinida de su sistema</string>
     <string name="app_language_title">Limba de s\'aplicatzione</string>
@@ -316,7 +311,7 @@
     <string name="error_download_resource_gone">Impossìbile recuperare custu iscarrigamentu</string>
     <string name="error_timeout">Connessione iscadida</string>
     <string name="error_progress_lost">Su progressu s\'est pèrdidu, ca su documentu est istadu iscantzelladu</string>
-    <string name="error_insufficient_storage">Perunu ispàtziu abarradu in su dispositivu</string>
+    <string name="error_insufficient_storage_left">Perunu ispàtziu abarradu in su dispositivu</string>
     <string name="error_postprocessing_stopped">NewPipe est istadu serradu in su mentres chi fiat traballende a su documentu</string>
     <string name="error_postprocessing_failed">Post-protzessamentu fallidu</string>
     <string name="error_http_not_found">No agatadu</string>
@@ -489,7 +484,7 @@
     <string name="show_play_with_kodi_title">Ammustra s\'optzione \"Riprodui cun Kodi\"</string>
     <string name="kore_not_found">Cheres installare s\'aplicatzione Kore chi mancat\?</string>
     <string name="play_with_kodi_title">Riprodui cun Kodi</string>
-    <string name="show_higher_resolutions_summary">Petzi unos cantos dispositivos podent riproduire vìdeos in 2K/4K</string>
+    <string name="show_higher_resolutions_summary">Petzi unos cantos dispositivos podent riproduire vìdeos in 1440p/4K</string>
     <string name="show_higher_resolutions_title">Ammustra sas risolutziones prus artas</string>
     <string name="default_popup_resolution_title">Risolutzione predefinida de sa ventanedda</string>
     <string name="default_resolution_title">Risolutzione predefinida</string>
@@ -539,7 +534,7 @@
     <string name="clear_queue_confirmation_summary">Colende dae unu riproduidore a s\'àteru dias pòdere remplasare sa lista tua</string>
     <string name="clear_queue_confirmation_title">Pedi una cunfirma in antis de iscantzellare una lista</string>
     <string name="notification_action_shuffle">Òrdine casuale</string>
-    <string name="notification_actions_summary">Modìfica cada atzione de notìfica inoghe in suta incarchende·la. Ischerta·nde finas a tres de ammustrare in sa notìfica cumpata impreende sas casellas de controllu a destra</string>
+    <string name="notification_actions_summary">Modìfica cada atzione de notìfica inoghe in suta incarchende·la. Ischerta·nde finas a tres de ammustrare in sa notìfica cumpata impreende sas casellas de controllu a destra.</string>
     <string name="notification_scale_to_square_image_summary">Sega sa miniadura ammustrada in sa notìfica dae su formadu in 16:9 a cussu 1:1</string>
     <string name="notification_action_nothing">Nudda</string>
     <string name="notification_action_buffering">Carrighende</string>
@@ -614,7 +609,6 @@
     <string name="description_select_note">Como podes ischertare su testu in intro de sa descritzione. Ammenta·ti chi sa pàgina diat pòdere trèmere e sos ligàmenes si diant pòdere no abèrrere cando ses in modalidade de ischerta.</string>
     <string name="downloads_storage_use_saf_summary_api_29">Incumintzende dae Android 10 petzi sa \'Storage Access Framework\' (Istrutura de Atzessu a s\'Archiviatzione) est suportada</string>
     <string name="open_website_license">Aberi su situ web</string>
-    <string name="service_provides_reason">%s frunit custa resone:</string>
     <string name="account_terminated">Contu serradu</string>
     <string name="feed_load_error_fast_unknown">Su recùperu lestru de sos flussos non frunit àteras informatziones in subra de custu.</string>
     <string name="feed_load_error_terminated">Su contu de s\'autore l\'ant serradu.
@@ -634,8 +628,6 @@
     <string name="comments_are_disabled">Sos cummentos sunt disabilitados</string>
     <string name="detail_heart_img_view_description">Su creadore b\'at postu unu coro</string>
     <string name="mark_as_watched">Marca comente pompiadu</string>
-    <string name="show_image_indicators_summary">Ammustra sos listrones colorados de Picasso in subra de sas immàgines chi indicant sa fonte issoro: ruja pro sa retze, biaita pro su discu e birde pro sa memòria</string>
-    <string name="show_image_indicators_title">Ammustra sos indicadores de immàgines</string>
     <string name="remote_search_suggestions">Impòsitos de chirca remota</string>
     <string name="local_search_suggestions">Impòsitos de chirca locales</string>
     <plurals name="deleted_downloads_toast">
@@ -652,7 +644,7 @@
     <string name="enqueued_next">Postu in lista comente imbeniente</string>
     <string name="enqueue_next_stream">Pone in lista comente imbeniente</string>
     <string name="processing_may_take_a_moment">Protzessende… Bi diat pòdere chèrrere unu pagu de tempus</string>
-    <string name="manual_update_title">Chirca agiornamentos</string>
+    <string name="check_for_updates">Chirca agiornamentos</string>
     <string name="manual_update_description">Verìfica in manera manuale pro versiones noas</string>
     <string name="checking_updates_toast">Controllende sos agiornamentos…</string>
     <string name="error_report_notification_title">NewPipe at rilevadu un\'errore, toca pro lu sinnalare</string>
@@ -788,7 +780,6 @@
     <string name="rewind">Torra in segus</string>
     <string name="replay">Torra a reprodùere</string>
     <string name="feed_fetch_channel_tabs_summary">Ischedas de recuperare cando agiornas sa fonte. Custa optzione non tenet efetu si unu canale benit agiornadu impreende sa modalidade lestra.</string>
-    <string name="share_playlist_with_titles_message">Cumpartzi s\'iscalita cun detàllios che a su nùmene de s\'iscalita e sos tìtulos de sos vìdeos o che a una lista simpre de URL de vìdeos</string>
     <string name="image_quality_medium">Calidade mesana</string>
     <string name="metadata_uploader_avatars">Avatars de su carrigadore</string>
     <string name="metadata_banners">Insignas</string>
@@ -806,4 +797,40 @@
     <string name="channel_tab_channels">Canales</string>
     <string name="previous_stream">Flussu antepostu</string>
     <string name="channel_tab_livestreams">Diretas</string>
+    <string name="notification_actions_summary_android13">Modìfica cada atzione de notìfica inoghe in suta tochende·la. Sas primas tres atziones (riprodutzione/pàusa, antepostu e imbeniente) sunt impostadas dae su sistema e non si podent personalizare.</string>
+    <string name="error_insufficient_storage">Non b\'at ispàtziu lìberu bastante in su dispositivu</string>
+    <string name="show_less">Mustra de mancu</string>
+    <string name="auto_update_check_description">NewPipe podet chircare in automàticu versiones noas cada tantu e notificare·ti cando sunt a disponimentu.
+\nLu boles abilitare?</string>
+    <string name="no">Nono</string>
+    <string name="settings_category_backup_restore_title">Còpia de seguresa e riprìstinu</string>
+    <plurals name="replies">
+        <item quantity="one">%s risposta</item>
+        <item quantity="other">%s rispostas</item>
+    </plurals>
+    <string name="show_more">Mustra de prus</string>
+    <string name="yes">Eja</string>
+    <string name="reset_settings_title">Reseta sas impostatziones</string>
+    <string name="reset_settings_summary">Reseta totu sas impostatziones a sos valores predefinidos issoro</string>
+    <string name="reset_all_settings">Resetende totu sas impostatziones as a iscartare totu sas impostatziones preferidas tuas e a torrare a allùghere s\'aplicatzione.
+\n
+\nSes seguru de bòlere sighire?</string>
+    <string name="import_settings_vulnerable_format">Sas impostatziones in s\'esportatzione chi benit importada impreant unu formadu vulneràbile chi est disusadu dae sa versione 0.27.0 de NewPipe. Assegura·ti chi s\'esportatzione importada bèngiat dae una fonte fidada, e preferi a impreare petzi esportatziones otentas dae NewPipe 0.27.0 o prus nou, in su benidore. Su suportu a s\'importatzione de impostatziones in custu formadu vulneràbile at a èssere luego bogadu de su totu, e dae cussu momentu sas versiones de NewPipe prus betzas no ant a èssere prus in gradu de importare impostatziones pro mèdiu de esportatziones de versiones prus noas.</string>
+    <string name="tab_bookmarks_short">Iscalitas</string>
+    <string name="share_playlist_as_youtube_temporary_playlist">Cumpartzi comente un\'iscalita temporànea de YouTube</string>
+    <string name="audio_track_type_secondary">segundàriu</string>
+    <string name="search_with_service_name">Chirca in %1$s</string>
+    <string name="search_with_service_name_and_filter">Chirca %1$s (%2$s)</string>
+    <string name="select_a_feed_group">Seletziona unu grupu de flussos</string>
+    <string name="no_feed_group_created_yet">Galu perunu grupu de flussos creadu</string>
+    <string name="feed_group_page_summary">Pàgina de grupu de canales</string>
+    <string name="channel_tab_likes">Agradessimentos</string>
+    <string name="migration_info_6_7_title">Pàgina Top 50 de SoundCloud bogada</string>
+    <string name="migration_info_6_7_message">SoundCloud at abbandonadu sos gràficos Top 50 originales. S\'ischeda currispondente est istada bogada dae sa pàgina printzipale tua.</string>
+    <string name="migration_info_7_8_title">Tendèntzias cumbinadas de YouTube bogadas</string>
+    <string name="migration_info_7_8_message">YouTube at abbandonadu sa pàgina de sas tendèntzias cumbinadas in su 21 de trìulas de su 2025. NewPipe at sostituidu sa pàgina de sas tendèntzias printzipales cun sas diretas de tendèntzia.\n\nPodes fintzas seletzionare pàginas de sas tendèntzias diferentes in \"Impostatziones &gt; Cuntenutos &gt; Cuntenutu de sa pàgina printzipale\".</string>
+    <string name="trending_gaming">Giogos de tendèntzia</string>
+    <string name="trending_podcasts">Podcasts de tendèntzia</string>
+    <string name="trending_movies">Films e programmas de tendèntzia</string>
+    <string name="trending_music">Mùsica de tendèntzia</string>
 </resources>

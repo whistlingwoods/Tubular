@@ -36,8 +36,9 @@ import com.google.android.material.tabs.TabLayout;
 import org.schabi.newpipe.BaseFragment;
 import org.schabi.newpipe.R;
 import org.schabi.newpipe.databinding.FragmentMainBinding;
+import org.schabi.newpipe.error.ErrorInfo;
 import org.schabi.newpipe.error.ErrorUtil;
-import org.schabi.newpipe.extractor.exceptions.ExtractionException;
+import org.schabi.newpipe.error.UserAction;
 import org.schabi.newpipe.local.playlist.LocalPlaylistFragment;
 import org.schabi.newpipe.settings.tabs.Tab;
 import org.schabi.newpipe.settings.tabs.TabsManager;
@@ -220,7 +221,7 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
     public void commitPlaylistTabs() {
         pagerAdapter.getLocalPlaylistFragments()
                 .stream()
-                .forEach(LocalPlaylistFragment::commitChanges);
+                .forEach(LocalPlaylistFragment::saveImmediate);
     }
 
     private void updateTabLayoutPosition() {
@@ -245,10 +246,10 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
         // change the background and icon color of the tab layout:
         // service-colored at the top, app-background-colored at the bottom
         tabLayout.setBackgroundColor(ThemeHelper.resolveColorFromAttr(requireContext(),
-                bottom ? R.attr.colorSecondary : R.attr.colorPrimary));
+                bottom ? android.R.attr.windowBackground : R.attr.colorPrimary));
 
         @ColorInt final int iconColor = bottom
-                ? ThemeHelper.resolveColorFromAttr(requireContext(), R.attr.colorAccent)
+                ? ThemeHelper.resolveColorFromAttr(requireContext(), android.R.attr.colorAccent)
                 : Color.WHITE;
         tabLayout.setTabRippleColor(ColorStateList.valueOf(iconColor).withAlpha(32));
         tabLayout.setTabIconTint(ColorStateList.valueOf(iconColor));
@@ -282,7 +283,7 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
          * Keep reference to LocalPlaylistFragments, because their data can be modified by the user
          * during runtime and changes are not committed immediately. However, in some cases,
          * the changes need to be committed immediately by calling
-         * {@link LocalPlaylistFragment#commitChanges()}.
+         * {@link LocalPlaylistFragment#saveImmediate()}.
          * The fragments are removed when {@link LocalPlaylistFragment#onDestroy()} is called.
          */
         private final List<LocalPlaylistFragment> localPlaylistFragments = new ArrayList<>();
@@ -303,9 +304,9 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
             final Fragment fragment;
             try {
                 fragment = tab.getFragment(context);
-            } catch (final ExtractionException e) {
-                ErrorUtil.showUiErrorSnackbar(context, "Getting fragment item", e);
-                return new BlankFragment();
+            } catch (final Throwable t) {
+                return new BlankFragment(new ErrorInfo(t, UserAction.GETTING_MAIN_SCREEN_TAB,
+                        "Tab " + tab.getClass().getSimpleName() + ":" + tab.getTabName(context)));
             }
 
             if (fragment instanceof BaseFragment) {

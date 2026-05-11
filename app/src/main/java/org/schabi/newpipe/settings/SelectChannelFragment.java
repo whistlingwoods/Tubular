@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2025 NewPipe contributors <https://newpipe.net>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package org.schabi.newpipe.settings;
 
 import android.content.DialogInterface;
@@ -11,6 +16,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.compose.ui.platform.ComposeView;
 import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,8 +25,10 @@ import org.schabi.newpipe.R;
 import org.schabi.newpipe.database.subscription.SubscriptionEntity;
 import org.schabi.newpipe.error.ErrorUtil;
 import org.schabi.newpipe.local.subscription.SubscriptionManager;
-import org.schabi.newpipe.util.image.PicassoHelper;
+import org.schabi.newpipe.ui.emptystate.EmptyStateSpec;
+import org.schabi.newpipe.ui.emptystate.EmptyStateUtil;
 import org.schabi.newpipe.util.ThemeHelper;
+import org.schabi.newpipe.util.image.CoilHelper;
 
 import java.util.List;
 import java.util.Vector;
@@ -30,34 +38,13 @@ import io.reactivex.rxjava3.core.Observer;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
-/**
- * Created by Christian Schabesberger on 26.09.17.
- * SelectChannelFragment.java is part of NewPipe.
- * <p>
- * NewPipe is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * </p>
- * <p>
- * NewPipe is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * </p>
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with NewPipe.  If not, see <http://www.gnu.org/licenses/>.
- * </p>
- */
-
 public class SelectChannelFragment extends DialogFragment {
 
     private OnSelectedListener onSelectedListener = null;
     private OnCancelListener onCancelListener = null;
 
     private ProgressBar progressBar;
-    private TextView emptyView;
+    private ComposeView emptyView;
     private RecyclerView recyclerView;
 
     private List<SubscriptionEntity> subscriptions = new Vector<>();
@@ -91,6 +78,8 @@ public class SelectChannelFragment extends DialogFragment {
 
         progressBar = v.findViewById(R.id.progressBar);
         emptyView = v.findViewById(R.id.empty_state_view);
+
+        EmptyStateUtil.setEmptyStateComposable(emptyView, EmptyStateSpec.NoSubscriptions);
         progressBar.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
         emptyView.setVisibility(View.GONE);
@@ -174,7 +163,7 @@ public class SelectChannelFragment extends DialogFragment {
         void onCancel();
     }
 
-    private class SelectChannelAdapter
+    private final class SelectChannelAdapter
             extends RecyclerView.Adapter<SelectChannelAdapter.SelectChannelItemHolder> {
         @NonNull
         @Override
@@ -190,7 +179,7 @@ public class SelectChannelFragment extends DialogFragment {
             final SubscriptionEntity entry = subscriptions.get(position);
             holder.titleView.setText(entry.getName());
             holder.view.setOnClickListener(view -> clickedItem(position));
-            PicassoHelper.loadAvatar(entry.getAvatarUrl()).into(holder.thumbnailView);
+            CoilHelper.INSTANCE.loadAvatar(holder.thumbnailView, entry.getAvatarUrl());
         }
 
         @Override

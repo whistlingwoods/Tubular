@@ -18,20 +18,20 @@ data class FeedUpdateInfo(
     @NotificationMode
     val notificationMode: Int,
     val name: String,
-    val avatarUrl: String,
+    val avatarUrl: String?,
     val url: String,
     val serviceId: Int,
     // description and subscriberCount are null if the constructor info is from the fast feed method
     val description: String?,
     val subscriberCount: Long?,
     val streams: List<StreamInfoItem>,
-    val errors: List<Throwable>,
+    val errors: List<Throwable>
 ) {
     constructor(
         subscription: SubscriptionEntity,
         info: Info,
         streams: List<StreamInfoItem>,
-        errors: List<Throwable>,
+        errors: List<Throwable>
     ) : this(
         uid = subscription.uid,
         notificationMode = subscription.notificationMode,
@@ -46,7 +46,7 @@ data class FeedUpdateInfo(
         description = (info as? ChannelInfo)?.description,
         subscriberCount = (info as? ChannelInfo)?.subscriberCount,
         streams = streams,
-        errors = errors,
+        errors = errors
     )
 
     /**

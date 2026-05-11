@@ -1,8 +1,15 @@
 package org.schabi.newpipe.local.playlist;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static org.schabi.newpipe.error.ErrorUtil.showUiErrorSnackbar;
 import static org.schabi.newpipe.ktx.ViewUtils.animate;
+import static org.schabi.newpipe.local.playlist.ExportPlaylistKt.export;
+import static org.schabi.newpipe.local.playlist.PlayListShareMode.JUST_URLS;
+import static org.schabi.newpipe.local.playlist.PlayListShareMode.WITH_TITLES;
+import static org.schabi.newpipe.local.playlist.PlayListShareMode.YOUTUBE_TEMP_PLAYLIST;
 import static org.schabi.newpipe.util.ThemeHelper.shouldUseGridLayout;
+
 
 import android.content.Context;
 import android.os.Bundle;
@@ -17,6 +24,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -24,8 +33,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewbinding.ViewBinding;
 
+import com.evernote.android.state.State;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.schabi.newpipe.NewPipeDatabase;
@@ -49,31 +58,31 @@ import org.schabi.newpipe.local.BaseLocalListFragment;
 import org.schabi.newpipe.local.history.HistoryRecordManager;
 import org.schabi.newpipe.player.playqueue.PlayQueue;
 import org.schabi.newpipe.player.playqueue.SinglePlayQueue;
+import org.schabi.newpipe.util.DeviceUtils;
 import org.schabi.newpipe.util.Localization;
 import org.schabi.newpipe.util.NavigationHelper;
 import org.schabi.newpipe.util.OnClickGesture;
 import org.schabi.newpipe.util.PlayButtonHelper;
+import org.schabi.newpipe.util.debounce.DebounceSavable;
+import org.schabi.newpipe.util.debounce.DebounceSaver;
 import org.schabi.newpipe.util.external_communication.ShareUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import icepick.State;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
-import io.reactivex.rxjava3.subjects.PublishSubject;
 
 public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistStreamEntry>, Void>
-        implements PlaylistControlViewHolder {
-    /** Save the list 10 seconds after the last change occurred. */
-    private static final long SAVE_DEBOUNCE_MILLIS = 10000;
+        implements PlaylistControlViewHolder, DebounceSavable {
+
     private static final int MINIMUM_INITIAL_DRAG_VELOCITY = 12;
     @State
     protected Long playlistId;
@@ -90,13 +99,12 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
     private LocalPlaylistManager playlistManager;
     private Subscription databaseSubscription;
 
-    private PublishSubject<Long> debouncedSaveSignal;
     private CompositeDisposable disposables;
 
     /** Whether the playlist has been fully loaded from db. */
     private AtomicBoolean isLoadingComplete;
-    /** Whether the playlist has been modified (e.g. items reordered or deleted) */
-    private AtomicBoolean isModified;
+    /** Used to debounce saving playlist edits to disk. */
+    private DebounceSaver debounceSaver;
     /** Flag to prevent simultaneous rewrites of the playlist. */
     private boolean isRewritingPlaylist = false;
 
@@ -108,7 +116,7 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
     private MainFragment.SelectedTabsPagerAdapter tabsPagerAdapter = null;
 
     public static LocalPlaylistFragment getInstance(final long playlistId, final String name) {
-        final LocalPlaylistFragment instance = new LocalPlaylistFragment();
+        final var instance = new LocalPlaylistFragment();
         instance.setInitialData(playlistId, name);
         return instance;
     }
@@ -121,12 +129,11 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         playlistManager = new LocalPlaylistManager(NewPipeDatabase.getInstance(requireContext()));
-        debouncedSaveSignal = PublishSubject.create();
 
         disposables = new CompositeDisposable();
 
         isLoadingComplete = new AtomicBoolean();
-        isModified = new AtomicBoolean();
+        debounceSaver = new DebounceSaver(this);
     }
 
     @Override
@@ -156,25 +163,14 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
     }
 
     @Override
-    protected ViewBinding getListHeader() {
+    protected Supplier<View> getListHeaderSupplier() {
         headerBinding = LocalPlaylistHeaderBinding.inflate(activity.getLayoutInflater(), itemsList,
-                false);
+            false);
         playlistControlBinding = headerBinding.playlistControl;
 
         headerBinding.playlistTitleView.setSelected(true);
 
-        return headerBinding;
-    }
-
-    /**
-     * <p>Commit changes immediately if the playlist has been modified.</p>
-     *  Delete operations and other modifications will be committed to ensure that the database
-     *  is up to date, e.g. when the user adds the just deleted stream from another fragment.
-     */
-    public void commitChanges() {
-        if (isModified != null && isModified.get()) {
-            saveImmediate();
-        }
+        return headerBinding::getRoot;
     }
 
     @Override
@@ -189,9 +185,8 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
         itemListAdapter.setSelectedListener(new OnClickGesture<>() {
             @Override
             public void selected(final LocalItem selectedItem) {
-                if (selectedItem instanceof PlaylistStreamEntry) {
-                    final StreamEntity item =
-                            ((PlaylistStreamEntry) selectedItem).getStreamEntity();
+                if (selectedItem instanceof PlaylistStreamEntry entry) {
+                    final StreamEntity item = entry.getStreamEntity();
                     NavigationHelper.openVideoDetailFragment(requireContext(), getFM(),
                             item.getServiceId(), item.getUrl(), item.getTitle(), null, false);
                 }
@@ -243,10 +238,13 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
         if (disposables != null) {
             disposables.clear();
         }
-        disposables.add(getDebouncedSaver());
+
+        if (debounceSaver != null) {
+            disposables.add(debounceSaver.getDebouncedSaver());
+            debounceSaver.setNoChangesToSave();
+        }
 
         isLoadingComplete.set(false);
-        isModified.set(false);
 
         playlistManager.getPlaylistStreams(playlistId)
                 .onBackpressureLatest()
@@ -304,8 +302,8 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (debouncedSaveSignal != null) {
-            debouncedSaveSignal.onComplete();
+        if (debounceSaver != null) {
+            debounceSaver.getDebouncedSaveSignal().onComplete();
         }
         if (disposables != null) {
             disposables.dispose();
@@ -314,12 +312,11 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
             tabsPagerAdapter.getLocalPlaylistFragments().remove(this);
         }
 
-        debouncedSaveSignal = null;
+        debounceSaver = null;
         playlistManager = null;
         disposables = null;
 
         isLoadingComplete = null;
-        isModified = null;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -343,7 +340,7 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
             @Override
             public void onNext(final List<PlaylistStreamEntry> streams) {
                 // Skip handling the result after it has been modified
-                if (isModified == null || !isModified.get()) {
+                if (debounceSaver == null || !debounceSaver.getIsModified()) {
                     handleResult(streams);
                     isLoadingComplete.set(true);
                 }
@@ -373,17 +370,7 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
             createRenameDialog();
         } else if (item.getItemId() == R.id.menu_item_remove_watched) {
             if (!isRewritingPlaylist) {
-                new AlertDialog.Builder(requireContext())
-                        .setMessage(R.string.remove_watched_popup_warning)
-                        .setTitle(R.string.remove_watched_popup_title)
-                        .setPositiveButton(R.string.ok, (d, id) ->
-                                removeWatchedStreams(false))
-                        .setNeutralButton(
-                                R.string.remove_watched_popup_yes_and_partially_watched_videos,
-                                (d, id) -> removeWatchedStreams(true))
-                        .setNegativeButton(R.string.cancel,
-                                (d, id) -> d.cancel())
-                        .show();
+                openRemoveWatchedConfirmationDialog();
             }
         } else if (item.getItemId() == R.id.menu_item_remove_duplicates) {
             if (!isRewritingPlaylist) {
@@ -396,34 +383,41 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
     }
 
     /**
-     * Shares the playlist as a list of stream URLs if {@code shouldSharePlaylistDetails} is
-     * set to {@code false}. Shares the playlist name along with a list of video titles and URLs
-     * if {@code shouldSharePlaylistDetails} is set to {@code true}.
+     * Shares the playlist in one of 3 ways, depending on the value of {@code shareMode}:
+     * <ul>
+     *     <li>{@code JUST_URLS}: shares the URLs only.</li>
+     *     <li>{@code WITH_TITLES}: each entry in the list is accompanied by its title.</li>
+     *     <li>{@code YOUTUBE_TEMP_PLAYLIST}: shares as a YouTube temporary playlist.</li>
+     * </ul>
      *
-     * @param shouldSharePlaylistDetails Whether the playlist details should be included in the
-     *                                   shared content.
+     * @param shareMode The way the playlist should be shared.
      */
-    private void sharePlaylist(final boolean shouldSharePlaylistDetails) {
+    private void sharePlaylist(final PlayListShareMode shareMode) {
         final Context context = requireContext();
 
         disposables.add(playlistManager.getPlaylistStreams(playlistId)
-                .flatMapSingle(playlist -> Single.just(playlist.stream()
-                        .map(PlaylistStreamEntry::getStreamEntity)
-                        .map(streamEntity -> {
-                            if (shouldSharePlaylistDetails) {
-                                return context.getString(R.string.video_details_list_item,
-                                        streamEntity.getTitle(), streamEntity.getUrl());
-                            } else {
-                                return streamEntity.getUrl();
-                            }
-                        })
-                        .collect(Collectors.joining("\n"))))
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(urlsText -> ShareUtils.shareText(
-                                context, name, shouldSharePlaylistDetails
-                                        ? context.getString(R.string.share_playlist_content_details,
-                                        name, urlsText) : urlsText),
-                        throwable -> showUiErrorSnackbar(this, "Sharing playlist", throwable)));
+            .flatMapSingle(playlist -> Single.just(export(
+
+                shareMode,
+                playlist,
+                context
+            )))
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                urlsText -> {
+
+                    final String content = shareMode == WITH_TITLES
+                        ? context.getString(R.string.share_playlist_content_details,
+                                            name,
+                                            urlsText
+                                           )
+                        : urlsText;
+
+                    ShareUtils.shareText(context, name, content);
+                },
+                throwable -> showUiErrorSnackbar(this, "Sharing playlist", throwable)
+            )
+        );
     }
 
     public void removeWatchedStreams(final boolean removePartiallyWatched) {
@@ -448,39 +442,28 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
                             .getIsPlaylistThumbnailPermanent(playlistId);
                     boolean thumbnailVideoRemoved = false;
 
-                    if (removePartiallyWatched) {
-                        for (final var playlistItem : playlist) {
-                            final int indexInHistory = Collections.binarySearch(historyStreamIds,
-                                    playlistItem.getStreamId());
+                    final var streamStates = recordManager
+                            .loadLocalStreamStateBatch(playlist).blockingGet();
 
-                            if (indexInHistory < 0) {
-                                itemsToKeep.add(playlistItem);
-                            } else if (!isThumbnailPermanent && !thumbnailVideoRemoved
-                                    && playlistManager.getPlaylistThumbnailStreamId(playlistId)
-                                    == playlistItem.getStreamEntity().getUid()) {
-                                thumbnailVideoRemoved = true;
-                            }
-                        }
-                    } else {
-                        final var streamStates = recordManager
-                                .loadLocalStreamStateBatch(playlist).blockingGet();
+                    for (int i = 0; i < playlist.size(); i++) {
+                        final var playlistItem = playlist.get(i);
+                        final var streamStateEntity = streamStates.get(i);
+                        final int indexInHistory = Collections.binarySearch(historyStreamIds,
+                                playlistItem.getStreamId());
+                        final long duration = playlistItem.toStreamInfoItem().getDuration();
 
-                        for (int i = 0; i < playlist.size(); i++) {
-                            final var playlistItem = playlist.get(i);
-                            final var streamStateEntity = streamStates.get(i);
-
-                            final int indexInHistory = Collections.binarySearch(historyStreamIds,
-                                    playlistItem.getStreamId());
-                            final long duration = playlistItem.toStreamInfoItem().getDuration();
-
-                            if (indexInHistory < 0 || (streamStateEntity != null
-                                    && !streamStateEntity.isFinished(duration))) {
-                                itemsToKeep.add(playlistItem);
-                            } else if (!isThumbnailPermanent && !thumbnailVideoRemoved
-                                    && playlistManager.getPlaylistThumbnailStreamId(playlistId)
-                                    == playlistItem.getStreamEntity().getUid()) {
-                                thumbnailVideoRemoved = true;
-                            }
+                        if (indexInHistory < 0 // stream is not in history
+                                // stream is in history but the streamStateEntity is null
+                                // if the stream was played for less than 5 seconds, see
+                                // StreamStateEntity#PLAYBACK_SAVE_THRESHOLD_START_MILLISECONDS
+                                || streamStateEntity == null
+                                || (!removePartiallyWatched
+                                        && !streamStateEntity.isFinished(duration))) {
+                            itemsToKeep.add(playlistItem);
+                        } else if (!isThumbnailPermanent && !thumbnailVideoRemoved
+                                && playlistManager.getPlaylistThumbnailStreamId(playlistId)
+                                == playlistItem.getStreamEntity().getUid()) {
+                            thumbnailVideoRemoved = true;
                         }
                     }
 
@@ -495,14 +478,15 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
 
                     itemListAdapter.clearStreamItemList();
                     itemListAdapter.addItems(itemsToKeep);
-                    saveChanges();
+                    debounceSaver.setHasChangesToSave();
+                    saveImmediate();
 
                     if (thumbnailVideoRemoved) {
                         updateThumbnailUrl();
                     }
 
                     final long videoCount = itemListAdapter.getItemsList().size();
-                    setVideoCount(videoCount);
+                    setStreamCountAndOverallDuration(itemListAdapter.getItemsList());
                     if (videoCount == 0) {
                         showEmptyState();
                     }
@@ -532,7 +516,7 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
             itemsList.getLayoutManager().onRestoreInstanceState(itemsListState);
             itemsListState = null;
         }
-        setVideoCount(itemListAdapter.getItemsList().size());
+        setStreamCountAndOverallDuration(itemListAdapter.getItemsList());
 
         PlayButtonHelper.initPlaylistControlClickListener(activity, playlistControlBinding, this);
 
@@ -560,8 +544,7 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
             return;
         }
 
-        final DialogEditTextBinding dialogBinding =
-                DialogEditTextBinding.inflate(getLayoutInflater());
+        final var dialogBinding = DialogEditTextBinding.inflate(getLayoutInflater());
         dialogBinding.dialogEditText.setHint(R.string.name);
         dialogBinding.dialogEditText.setInputType(InputType.TYPE_CLASS_TEXT);
         dialogBinding.dialogEditText.setSelection(dialogBinding.dialogEditText.getText().length());
@@ -665,8 +648,9 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
                 .subscribe(itemsToKeep -> {
                     itemListAdapter.clearStreamItemList();
                     itemListAdapter.addItems(itemsToKeep);
-                    setVideoCount(itemListAdapter.getItemsList().size());
-                    saveChanges();
+                    setStreamCountAndOverallDuration(itemListAdapter.getItemsList());
+                    debounceSaver.setHasChangesToSave();
+                    saveImmediate();
 
                     hideLoading();
                     isRewritingPlaylist = false;
@@ -684,50 +668,33 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
             updateThumbnailUrl();
         }
 
-        setVideoCount(itemListAdapter.getItemsList().size());
-        saveChanges();
+        setStreamCountAndOverallDuration(itemListAdapter.getItemsList());
+        debounceSaver.setHasChangesToSave();
+        saveImmediate();
     }
 
-    private void saveChanges() {
-        if (isModified == null || debouncedSaveSignal == null) {
-            return;
-        }
-
-        isModified.set(true);
-        debouncedSaveSignal.onNext(System.currentTimeMillis());
-    }
-
-    private Disposable getDebouncedSaver() {
-        if (debouncedSaveSignal == null) {
-            return Disposable.empty();
-        }
-
-        return debouncedSaveSignal
-                .debounce(SAVE_DEBOUNCE_MILLIS, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(ignored -> saveImmediate(), throwable ->
-                        showError(new ErrorInfo(throwable, UserAction.SOMETHING_ELSE,
-                                "Debounced saver")));
-    }
-
-    private void saveImmediate() {
+    /**
+     * <p>Commit changes immediately if the playlist has been modified.</p>
+     *  Delete operations and other modifications will be committed to ensure that the database
+     *  is up to date, e.g. when the user adds the just deleted stream from another fragment.
+     */
+    @Override
+    public void saveImmediate() {
         if (playlistManager == null || itemListAdapter == null) {
             return;
         }
 
         // List must be loaded and modified in order to save
-        if (isLoadingComplete == null || isModified == null
-                || !isLoadingComplete.get() || !isModified.get()) {
-            Log.w(TAG, "Attempting to save playlist when local playlist "
-                    + "is not loaded or not modified: playlist id=[" + playlistId + "]");
+        if (isLoadingComplete == null || debounceSaver == null
+                || !isLoadingComplete.get() || !debounceSaver.getIsModified()) {
             return;
         }
 
         final List<LocalItem> items = itemListAdapter.getItemsList();
         final List<Long> streamIds = new ArrayList<>(items.size());
         for (final LocalItem item : items) {
-            if (item instanceof PlaylistStreamEntry) {
-                streamIds.add(((PlaylistStreamEntry) item).getStreamId());
+            if (item instanceof PlaylistStreamEntry entry) {
+                streamIds.add(entry.getStreamId());
             }
         }
 
@@ -740,8 +707,8 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         () -> {
-                            if (isModified != null) {
-                                isModified.set(false);
+                            if (debounceSaver != null) {
+                                debounceSaver.setNoChangesToSave();
                             }
                         },
                         throwable -> showError(new ErrorInfo(throwable,
@@ -784,9 +751,16 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
                 final int targetIndex = target.getBindingAdapterPosition();
                 final boolean isSwapped = itemListAdapter.swapItems(sourceIndex, targetIndex);
                 if (isSwapped) {
-                    saveChanges();
+                    debounceSaver.setHasChangesToSave();
                 }
                 return isSwapped;
+            }
+
+            @Override
+            public void clearView(@NonNull final RecyclerView recyclerView,
+                                  @NonNull final RecyclerView.ViewHolder viewHolder) {
+                super.clearView(recyclerView, viewHolder);
+                saveImmediate();
             }
 
             @Override
@@ -855,13 +829,25 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
         this.name = !TextUtils.isEmpty(title) ? title : "";
     }
 
-    private void setVideoCount(final long count) {
+    private void setStreamCountAndOverallDuration(final ArrayList<LocalItem> itemsList) {
         if (activity != null && headerBinding != null) {
-            headerBinding.playlistStreamCount.setText(Localization
-                    .localizeStreamCount(activity, count));
+            final long streamCount = itemsList.size();
+            final long playlistOverallDurationSeconds = itemsList.stream()
+                    .filter(PlaylistStreamEntry.class::isInstance)
+                    .map(PlaylistStreamEntry.class::cast)
+                    .map(PlaylistStreamEntry::getStreamEntity)
+                    .mapToLong(StreamEntity::getDuration)
+                    .sum();
+            headerBinding.playlistStreamCount.setText(
+                    Localization.concatenateStrings(
+                            Localization.localizeStreamCount(activity, streamCount),
+                            Localization.getDurationString(playlistOverallDurationSeconds,
+                                                            true, true))
+            );
         }
     }
 
+    @Override
     public PlayQueue getPlayQueue() {
         return getPlayQueue(0);
     }
@@ -889,14 +875,45 @@ public class LocalPlaylistFragment extends BaseLocalListFragment<List<PlaylistSt
     private void createShareConfirmationDialog() {
         new AlertDialog.Builder(requireContext())
                 .setTitle(R.string.share_playlist)
-                .setMessage(R.string.share_playlist_with_titles_message)
                 .setCancelable(true)
                 .setPositiveButton(R.string.share_playlist_with_titles, (dialog, which) ->
-                    sharePlaylist(/* shouldSharePlaylistDetails= */ true)
+                    sharePlaylist(WITH_TITLES)
+                )
+                .setNeutralButton(R.string.share_playlist_as_youtube_temporary_playlist,
+                    (dialog, which) -> sharePlaylist(YOUTUBE_TEMP_PLAYLIST)
                 )
                 .setNegativeButton(R.string.share_playlist_with_list, (dialog, which) ->
-                    sharePlaylist(/* shouldSharePlaylistDetails= */ false)
+                    sharePlaylist(JUST_URLS)
                 )
+                .show();
+    }
+
+    /**
+     * Opens a confirmation dialog to remove watched streams from the playlist.
+     * The user can also choose to remove partially watched streams.
+     */
+    private void openRemoveWatchedConfirmationDialog() {
+        final android.widget.CheckBox removePartiallyWatchedCheckbox =
+                new android.widget.CheckBox(requireContext());
+        removePartiallyWatchedCheckbox.setText(
+                R.string.remove_watched_popup_partially_watched_streams);
+
+        // Wrap the checkbox in a container with dialog-like horizontal padding
+        // so it aligns with the dialog title and message on the start side.
+        final LinearLayout checkboxContainer = new LinearLayout(requireContext());
+        checkboxContainer.setOrientation(LinearLayout.VERTICAL);
+        final int padding = DeviceUtils.dpToPx(20, requireContext());
+        checkboxContainer.setPadding(padding, padding, padding, 0);
+        checkboxContainer.addView(removePartiallyWatchedCheckbox,
+                new LayoutParams(MATCH_PARENT, WRAP_CONTENT));
+
+        new AlertDialog.Builder(requireContext())
+                .setMessage(R.string.remove_watched_popup_warning)
+                .setTitle(R.string.remove_watched_popup_title)
+                .setView(checkboxContainer)
+                .setPositiveButton(R.string.yes, (d, id) ->
+                        removeWatchedStreams(removePartiallyWatchedCheckbox.isChecked()))
+                .setNegativeButton(R.string.cancel, (d, id) -> d.cancel())
                 .show();
     }
 

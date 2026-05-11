@@ -34,7 +34,7 @@
     <string name="default_resolution_title">Oletusresoluutio</string>
     <string name="default_popup_resolution_title">Ponnahdusikkunan oletusresoluutio</string>
     <string name="show_higher_resolutions_title">Näytä korkeammat resoluutiot</string>
-    <string name="show_higher_resolutions_summary">Vain jotkin laitteet voivat toistaa 2K/4K-videota</string>
+    <string name="show_higher_resolutions_summary">Vain jotkin laitteet voivat toistaa 1440p/4K-videota</string>
     <string name="play_with_kodi_title">Toista Kodissa</string>
     <string name="kore_not_found">Asennetaanko puuttuva Kore-sovellus\?</string>
     <string name="show_play_with_kodi_title">Näytä ”Toista Kodissa”-vaihtoehto</string>
@@ -102,9 +102,6 @@
     <string name="video">Video</string>
     <string name="audio">Ääni</string>
     <string name="retry">Toista uudelleen</string>
-    <string name="short_thousand">t.</string>
-    <string name="short_million">milj.</string>
-    <string name="short_billion">bilj.</string>
     <string name="no_subscribers">Ei tilaajia</string>
     <plurals name="subscribers">
         <item quantity="one">%s tilaaja</item>
@@ -158,7 +155,7 @@
     <string name="delete_item_search_history">Haluatko poistaa tämän hakuhistoriasta?</string>
     <string name="resume_on_audio_focus_gain_title">Jatka toistoa</string>
     <string name="what_device_headline">Info:</string>
-    <string name="info_labels">Mikä:\\nPyyntö:\\nSisällön kieli:\\nSisällön maa:\\n:Sovelluksen kieli:\\nPalvelu:\\nGMT Aika:\\nPaketti:\\nVersio:\\nOS versio:</string>
+    <string name="info_labels">Mikä:\nPyyntö:\nSisällön kieli:\nSisällön maa:\n:Sovelluksen kieli:\nPalvelu:\nGMT Aika:\nPaketti:\nVersio:\nOS versio:</string>
     <string name="copyright" formatted="true">© %1$s %2$s %3$s alla</string>
     <string name="main_page_content">Pääsivun sisältö</string>
     <string name="blank_page_summary">Tyhjä sivu</string>
@@ -308,7 +305,7 @@
 \n3. Kirjaudu sisään kysyttäessä.
 \n4. Kopioi se nettiosoite johon sinut ohjattiin.</string>
     <string name="import_soundcloud_instructions_hint">sinun käyttäjänimesi, soundcloud.com/&lt;sinun käyttäjänimesi&gt;</string>
-    <string name="import_network_expensive_warning">Ota huomioon että tämä operaatio voi käyttää paljon dataa. 
+    <string name="import_network_expensive_warning">Ota huomioon että tämä operaatio voi käyttää paljon dataa.
 \n
 \nHaluatko jatkaa\?</string>
     <string name="playback_speed_control">Toistonopeuden säätimet</string>
@@ -337,7 +334,6 @@
     <string name="recently_added">Hiljattain lisätyt</string>
     <string name="local">Paikalliset</string>
     <string name="most_liked">Pidetyimmät</string>
-    <string name="localization_changes_requires_app_restart">Kieli vaihtuu, kun sovellus uudelleenkäynnistetään</string>
     <string name="error_unable_to_load_comments">Kommentteja ei voitu ladata</string>
     <string name="main_page_content_summary">Mitkä välilehdet näytetään pääsivulla</string>
     <string name="done">Valmis</string>
@@ -396,10 +392,9 @@
     <string name="enable_playback_state_lists_summary">Näytä toistokohtien osoittimet listoissa</string>
     <string name="enable_playback_state_lists_title">Kohdat listoissa</string>
     <string name="enable_playback_resume_summary">Palauta edellinen toistokohta</string>
-    <string name="remove_watched_popup_warning">Aiemmin katsotut ja soittolistaan lisätyt videot poistetaan.
-\nOletko varma\? Tätä ei voi peruuttaa!</string>
-    <string name="remove_watched_popup_title">Poistetaanko katsotut videot\?</string>
-    <string name="remove_watched_popup_yes_and_partially_watched_videos">Kyllä ja osittain katsotut videot</string>
+    <string name="remove_watched_popup_warning">Aiemmin katsotut ja soittolistaan lisätyt videot poistetaan. \nOletko varma? Tätä ei voi peruuttaa!</string>
+    <string name="remove_watched_popup_title">Poistetaanko katsotut videot?</string>
+    <string name="remove_watched_popup_partially_watched_streams">Kyllä ja osittain katsotut videot</string>
     <string name="stop">Pysäytä</string>
     <string name="clear_download_history">Tyhjennä lataushistoria</string>
     <string name="close">Sulje</string>
@@ -481,7 +476,7 @@
     <string name="error_download_resource_gone">Tätä latausta ei voi palauttaa</string>
     <string name="error_timeout">Yhteys aikakatkaistiin</string>
     <string name="error_progress_lost">Eteneminen menetettiin, koska tiedosto poistettiin</string>
-    <string name="error_insufficient_storage">Laitteella ei ole tilaa</string>
+    <string name="error_insufficient_storage_left">Laitteella ei ole tilaa</string>
     <string name="error_postprocessing_stopped">NewPipe suljettiin, kun se käsitteli tiedostoa</string>
     <string name="error_postprocessing_failed">Jälkikäsittely epäonnistui</string>
     <string name="error_http_not_found">Ei löytynyt</string>
@@ -544,7 +539,7 @@
     <string name="notification_action_shuffle">Sekoita</string>
     <string name="notification_action_repeat">Toista uudelleen</string>
     <string name="notification_actions_at_most_three">Voit valita enintään kolme toimintoa ilmoituksessa näytettäväksi!</string>
-    <string name="notification_actions_summary">Muokkaa ilmoitustoimintoja näpäyttämällä niitä. Valitse ilmoituksessa näytettäväksi enintään kolme käyttämällä oikealla olevia valintaruutuja</string>
+    <string name="notification_actions_summary">Muokkaa ilmoitustoimintoja näpäyttämällä niitä. Valitse ilmoituksessa näytettäväksi enintään kolme käyttämällä oikealla olevia valintaruutuja.</string>
     <string name="notification_action_4_title">Viides toimintopainike</string>
     <string name="notification_action_3_title">Neljäs toimintopainike</string>
     <string name="notification_action_2_title">Kolmas toimintopainike</string>
@@ -596,7 +591,6 @@
     <string name="night_theme_title">Yöteema</string>
     <string name="description_select_disable">Poista käytöstä tekstinvalinta kuvauskentän sisältä</string>
     <string name="description_select_note">Voit nyt valita tekstin kuvauskentän sisältä. Huomioithan, että valintatilan aikana sivu voi vilkkua ja linkit eivät ehkä ole klikattavia.</string>
-    <string name="service_provides_reason">%s tuo tämän syyn:</string>
     <string name="seekbar_preview_thumbnail_title">Säätövivun kuvakkeen esikatselu</string>
     <string name="disable_media_tunneling_summary">Poista median tunnelointi käytöstä, jos havaitset mustan näyttöruudun tai änkytystä videon toistossa.</string>
     <string name="disable_media_tunneling_title">Poista median tunnelointi käytöstä</string>
@@ -634,8 +628,6 @@
     <string name="no_dir_yet">Latauskansiota ei vielä asetettu, valitse ensin oletuslatauskansio</string>
     <string name="comments_are_disabled">Kommentit poistettu käytöstä</string>
     <string name="mark_as_watched">Merkitse katsotuksi</string>
-    <string name="show_image_indicators_summary">Näytä Picasso-värjätyt nauhat kuvien päällä osoittaakseen lähteen: punainen tarkoittaa verkkoa, sininen tarkoittaa levytilaa ja vihreä tarkoittaa muistia</string>
-    <string name="show_image_indicators_title">Näytä kuvailmaisimet</string>
     <string name="remote_search_suggestions">Etähakuehdotukset</string>
     <string name="local_search_suggestions">Paikalliset hakuehdotukset</string>
     <string name="enqueue_next_stream">Lisää seuraavaksi</string>
@@ -652,7 +644,7 @@
         <item quantity="other">Poistettu %1$s latausta</item>
     </plurals>
     <string name="processing_may_take_a_moment">Käsitellään… Voi kestää hetken</string>
-    <string name="manual_update_title">Tarkista päivitykset</string>
+    <string name="check_for_updates">Tarkista päivitykset</string>
     <string name="manual_update_description">Tarkista manuaalisesti onko uusia versioita saatavilla</string>
     <string name="checking_updates_toast">Tarkistetaan päivityksiä…</string>
     <string name="error_report_channel_description">Ilmoitukset, joilla raportoidaan virheistä</string>
@@ -759,7 +751,6 @@
     <string name="rewind">Kelaa taaksepäin</string>
     <string name="feed_fetch_channel_tabs_summary">Noudettavat välilehdet syötettä päivitettäessä. Tällä valinnalla ei ole vaikutusta, jos kanava päivitetään käyttämällä nopeaa tilaa.</string>
     <string name="delete_downloaded_files_confirm">Poistetaanko kaikki ladatut tiedostot levyltä\?</string>
-    <string name="share_playlist_with_titles_message">Jaa soittolista, jossa on tietoja, kuten soittolistan nimi ja videon nimi, tai yksinkertainen luettelo videoiden URL-osoitteista</string>
     <string name="image_quality_medium">Keskilaatu</string>
     <string name="metadata_uploader_avatars">Lataajan avatarit</string>
     <string name="percent">Prosentti</string>
@@ -789,7 +780,30 @@
     <string name="channel_tab_channels">Kanavat</string>
     <string name="you_successfully_subscribed">Olet nyt tilannut tämän kanavan</string>
     <string name="previous_stream">Edellinen stream</string>
-    <string name="channel_tab_livestreams"/>
+    <string name="channel_tab_livestreams">Live</string>
     <string name="remove_duplicates_message">Haluatko poistaa kaikki ylimääräiset identtiset suoratoistot tästä soittolistasta\?</string>
     <string name="streams_not_yet_supported_removed">Suoratoistot, joita lataaja ei vielä tue, ei näytetä</string>
+    <plurals name="replies">
+        <item quantity="one">%s vastaus</item>
+        <item quantity="other">%s vastausta</item>
+    </plurals>
+    <string name="show_more">Näytä lisää</string>
+    <string name="show_less">Näytä vähemmän</string>
+    <string name="show_channel_tabs">Kanavan välilehdet</string>
+    <string name="yes">Kyllä</string>
+    <string name="no">Ei</string>
+    <string name="reset_all_settings">Kaikkien asetusten nollaaminen hävittää kaikki valitsemasi asetukset ja käynnistää sovelluksen uudelleen.
+\n
+\nOletko varma, että haluat jatkaa?</string>
+    <string name="settings_category_backup_restore_title">Varmuuskopiointi ja palauttaminen</string>
+    <string name="reset_settings_title">Nollaa asetukset</string>
+    <string name="reset_settings_summary">Palauta kaikki asetukset oletusarvoihin</string>
+    <string name="auto_update_check_description">NewPipe voi automaattisesti tarkistaa päivitysten saatavuuden silloin tällöin ja ilmoittaa kun niitä on saatavilla.
+\nHaluatko ottaa tämän käyttöön?</string>
+    <string name="error_insufficient_storage">Laitteella ei ole riittävästi vapaata tilaa</string>
+    <string name="share_playlist_as_youtube_temporary_playlist">Jaa tilapäisenä YouTube-soittolistana</string>
+    <string name="channel_tab_tracks">Raidat</string>
+    <string name="question_mark">\?</string>
+    <string name="audio_track_type_secondary">toissijainen</string>
+    <string name="tab_bookmarks_short">Soittolistat</string>
 </resources>

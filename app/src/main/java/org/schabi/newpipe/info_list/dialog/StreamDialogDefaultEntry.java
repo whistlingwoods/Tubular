@@ -5,6 +5,7 @@ import static org.schabi.newpipe.util.SparseItemUtil.fetchItemInfoIfSparse;
 import static org.schabi.newpipe.util.SparseItemUtil.fetchStreamInfoAndSaveToDatabase;
 import static org.schabi.newpipe.util.SparseItemUtil.fetchUploaderUrlIfSparse;
 
+import android.content.Context;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
@@ -13,6 +14,9 @@ import androidx.annotation.StringRes;
 import org.schabi.newpipe.R;
 import org.schabi.newpipe.database.stream.model.StreamEntity;
 import org.schabi.newpipe.download.DownloadDialog;
+import org.schabi.newpipe.error.ErrorInfo;
+import org.schabi.newpipe.error.ErrorUtil;
+import org.schabi.newpipe.error.UserAction;
 import org.schabi.newpipe.local.dialog.PlaylistAppendDialog;
 import org.schabi.newpipe.local.dialog.PlaylistDialog;
 import org.schabi.newpipe.local.history.HistoryRecordManager;
@@ -41,36 +45,42 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
  * </p>
  */
 public enum StreamDialogDefaultEntry {
-    SHOW_CHANNEL_DETAILS(R.string.show_channel_details, (fragment, item) ->
-            fetchUploaderUrlIfSparse(fragment.requireContext(), item.getServiceId(), item.getUrl(),
-                    item.getUploaderUrl(), url -> openChannelFragment(fragment, item, url))
-    ),
+    SHOW_CHANNEL_DETAILS(R.string.show_channel_details, (fragment, item) -> {
+        final var activity = fragment.requireActivity();
+        fetchUploaderUrlIfSparse(activity, item.getServiceId(), item.getUrl(),
+                item.getUploaderUrl(), url -> openChannelFragment(activity, item, url));
+    }),
 
     /**
      * Enqueues the stream automatically to the current PlayerType.
      */
-    ENQUEUE(R.string.enqueue_stream, (fragment, item) ->
-            fetchItemInfoIfSparse(fragment.requireContext(), item, singlePlayQueue ->
-                NavigationHelper.enqueueOnPlayer(fragment.getContext(), singlePlayQueue))
-    ),
+    ENQUEUE(R.string.enqueue_stream, (fragment, item) -> {
+            final Context ctx = fragment.requireContext().getApplicationContext();
+            fetchItemInfoIfSparse(ctx, item, singlePlayQueue ->
+                NavigationHelper.enqueueOnPlayer(ctx, singlePlayQueue));
+    }),
 
     /**
      * Enqueues the stream automatically to the current PlayerType
      * after the currently playing stream.
      */
-    ENQUEUE_NEXT(R.string.enqueue_next_stream, (fragment, item) ->
-            fetchItemInfoIfSparse(fragment.requireContext(), item, singlePlayQueue ->
-                NavigationHelper.enqueueNextOnPlayer(fragment.getContext(), singlePlayQueue))
-    ),
+    ENQUEUE_NEXT(R.string.enqueue_next_stream, (fragment, item) -> {
+            final Context ctx = fragment.requireContext().getApplicationContext();
+            fetchItemInfoIfSparse(ctx, item, singlePlayQueue ->
+                NavigationHelper.enqueueNextOnPlayer(ctx, singlePlayQueue));
+    }),
 
-    START_HERE_ON_BACKGROUND(R.string.start_here_on_background, (fragment, item) ->
-            fetchItemInfoIfSparse(fragment.requireContext(), item, singlePlayQueue ->
-                NavigationHelper.playOnBackgroundPlayer(
-                        fragment.getContext(), singlePlayQueue, true))),
+    START_HERE_ON_BACKGROUND(R.string.start_here_on_background, (fragment, item) -> {
+            final Context ctx = fragment.requireContext().getApplicationContext();
+            fetchItemInfoIfSparse(ctx, item, singlePlayQueue ->
+                NavigationHelper.playOnBackgroundPlayer(ctx, singlePlayQueue, true));
+    }),
 
-    START_HERE_ON_POPUP(R.string.start_here_on_popup, (fragment, item) ->
-            fetchItemInfoIfSparse(fragment.requireContext(), item, singlePlayQueue ->
-                NavigationHelper.playOnPopupPlayer(fragment.getContext(), singlePlayQueue, true))),
+    START_HERE_ON_POPUP(R.string.start_here_on_popup, (fragment, item) -> {
+            final Context ctx = fragment.requireContext().getApplicationContext();
+            fetchItemInfoIfSparse(ctx, item, singlePlayQueue ->
+                NavigationHelper.playOnPopupPlayer(ctx, singlePlayQueue, true));
+    }),
 
     SET_AS_PLAYLIST_THUMBNAIL(R.string.set_as_playlist_thumbnail, (fragment, item) -> {
         throw new UnsupportedOperationException("This needs to be implemented manually "
@@ -113,7 +123,10 @@ public enum StreamDialogDefaultEntry {
     DOWNLOAD(R.string.download, (fragment, item) ->
             fetchStreamInfoAndSaveToDatabase(fragment.requireContext(), item.getServiceId(),
                     item.getUrl(), info -> {
-                        if (fragment.getContext() != null) {
+                        // Ensure the fragment is attached and its state hasn't been saved to avoid
+                        // showing dialog during lifecycle changes or when the activity is paused,
+                        // e.g. by selecting the download option and opening a different fragment.
+                        if (fragment.isAdded() && !fragment.isStateSaved()) {
                             final DownloadDialog downloadDialog =
                                     new DownloadDialog(fragment.requireContext(), info);
                             downloadDialog.show(fragment.getChildFragmentManager(),
@@ -129,6 +142,16 @@ public enum StreamDialogDefaultEntry {
     MARK_AS_WATCHED(R.string.mark_as_watched, (fragment, item) ->
         new HistoryRecordManager(fragment.getContext())
                 .markAsWatched(item)
+                .doOnError(error -> {
+                    ErrorUtil.showSnackbar(
+                            fragment.requireContext(),
+                            new ErrorInfo(
+                                    error,
+                                    UserAction.OPEN_INFO_ITEM_DIALOG,
+                                    "Got an error when trying to mark as watched"
+                            )
+                    );
+                })
                 .onErrorComplete()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe()

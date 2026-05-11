@@ -82,7 +82,7 @@
     <string name="error_download_resource_gone">Nuk mund të rikuperohet ky shkarkim</string>
     <string name="error_timeout">Koha e lidhjes skadoi</string>
     <string name="error_progress_lost">Progresi humbi, pasi skedari është fshirë</string>
-    <string name="error_insufficient_storage">Nuk ka vend bosh në pajisje</string>
+    <string name="error_insufficient_storage_left">Nuk ka vend bosh në pajisje</string>
     <string name="error_postprocessing_stopped">NewPipe u mbyll ndërkohë që po punohej mbi skedarin</string>
     <string name="error_postprocessing_failed">Procesimi dështoi</string>
     <string name="error_http_not_found">Nuk u gjet</string>
@@ -207,7 +207,6 @@
     <string name="new_and_hot">Të rejat dhe të nxehtat</string>
     <string name="top_50">Top 50</string>
     <string name="trending">E trendit</string>
-    <string name="localization_changes_requires_app_restart">Gjuha do të ndryshojë sapo aplikacioni të riniset</string>
     <string name="error_unable_to_load_comments">Nuk mundën të ngarkohen komentet</string>
     <string name="import_settings">A dëshironi që të importoni dhe aranzhimet gjithashtu\?</string>
     <string name="override_current_data">Kjo do të mbishkruajë strukturimin tuaj të tanishëm.</string>
@@ -296,9 +295,6 @@
     </plurals>
     <string name="no_subscribers">Nuk ka abonues</string>
     <string name="drawer_header_description">Aktivizoje shërbimin, momentalisht e zgjedhur:</string>
-    <string name="short_billion">B</string>
-    <string name="short_million">M</string>
-    <string name="short_thousand">k</string>
     <string name="retry">Riprovo</string>
     <string name="audio">Audio</string>
     <string name="video">Video</string>
@@ -311,7 +307,7 @@
     <string name="detail_thumbnail_view_description">Luaje videon, kohëzgjatja:</string>
     <string name="error_details_headline">Detajet:</string>
     <string name="your_comment">Komenti juaj (në Anglisht):</string>
-    <string name="info_labels">Çfarë:\\nKërkesa:\\nGjuha e përmbajtjes:\\nShteti i pëmbajtjes:\\nGjuha e aplikacionit:\\nShërbimi:\\nKoha në GMT:\\nPaketa:\\nVersioni:\\nVersioni i sistemit operativ:</string>
+    <string name="info_labels">Çfarë:\nKërkesa:\nGjuha e përmbajtjes:\nShteti i pëmbajtjes:\nGjuha e aplikacionit:\nShërbimi:\nKoha në GMT:\nPaketa:\nVersioni:\nVersioni i sistemit operativ:</string>
     <string name="what_happened_headline">Çfarë ndodhi:</string>
     <string name="what_device_headline">Informacion:</string>
     <string name="error_snackbar_action">Raporto</string>
@@ -365,16 +361,16 @@
     </plurals>
     <string name="controls_popup_title">Popup</string>
     <string name="tracks">Pistë</string>
-    <string name="feed_use_dedicated_fetch_method_help_text">Mendoni se lista po ngarkohet shumë ngadalë\? Nëse po, provoni të aktivizoni ngarkimin e shpejtë (ju mund ta ndryshoni tek aranzhimet ose duke shtypur butonin më poshtë). 
-\n 
-\nNewPipe ofron dy strategji të ndryshme të ngarkimit: 
-\n• Të merret i gjithë kanali i abonuar, më e ngadaltë por e plotë 
-\n• Të përdoret një shërbim i dedikuar, i cili është i shpejtë por jo i plotë. 
-\n 
-\nNdryshimi midis të dyjave është se i shpejti zakonisht ka më pak informacion, si psh kohëzgjatja e objektit apo lloji (nuk mund të bëjë dallimin midis videove në kohë reale apo atyre normale) dhe mund të kthejë më pak objekte. 
-\n 
-\nYouTube është një shembull i një shërbimi i cili e ofron këtë metodë të shpejtë me anë të listës së vetë RSS. 
-\n 
+    <string name="feed_use_dedicated_fetch_method_help_text">Mendoni se lista po ngarkohet shumë ngadalë\? Nëse po, provoni të aktivizoni ngarkimin e shpejtë (ju mund ta ndryshoni tek aranzhimet ose duke shtypur butonin më poshtë).
+\n
+\nNewPipe ofron dy strategji të ndryshme të ngarkimit:
+\n• Të merret i gjithë kanali i abonuar, më e ngadaltë por e plotë
+\n• Të përdoret një shërbim i dedikuar, i cili është i shpejtë por jo i plotë.
+\n
+\nNdryshimi midis të dyjave është se i shpejti zakonisht ka më pak informacion, si psh kohëzgjatja e objektit apo lloji (nuk mund të bëjë dallimin midis videove në kohë reale apo atyre normale) dhe mund të kthejë më pak objekte.
+\n
+\nYouTube është një shembull i një shërbimi i cili e ofron këtë metodë të shpejtë me anë të listës së vetë RSS.
+\n
 \nSi përfundim, zgjedhja mbetet në dorën tuaj dhe se çfarë ju preferoni: shpejtësi apo informacion të saktë.</string>
     <string name="enable_disposed_exceptions_summary">Detyroni raportimin e përjashtimeve Rx të padërgueshme jashtë fragmentit apo ciklit jetësor të aktivitetit pas hedhjes</string>
     <string name="app_license">NewPipe është program i lirë copyleft: Ju mund ta përdorni, ta studioni, ta ndani me të tjerët dhe ta përmirësoni sipas dëshirës. Specifikisht ju mund ta rishpërndani dhe/ose ta modifikoni sipas kushteve të Licensës GNU General Public siç është publikuar nga Fondacioni për Softuerin e Lirë (FSF), sipas versionit 3 të Licensës, ose (sipas mundësive tuaja) në një version më të ri.</string>
@@ -501,7 +497,7 @@
     <string name="show_play_with_kodi_summary">Shfaq një opsion për të luajtur videot përmes Kodi</string>
     <string name="show_play_with_kodi_title">Shfaq opsionin \"Luaj me Kodi\"</string>
     <string name="kore_not_found">Instaloni aplikacionin Kore që mungon\?</string>
-    <string name="show_higher_resolutions_summary">Vetëm disa pajisje mund të luajnë video 2K/4K</string>
+    <string name="show_higher_resolutions_summary">Vetëm disa pajisje mund të luajnë video 1440p/4K</string>
     <string name="show_higher_resolutions_title">Shfaq rezolucione më të larta</string>
     <string name="default_popup_resolution_title">Rezolucioni i parazgjedhur i popup</string>
     <string name="download_path_audio_dialog_title">Zgjidhni dosjen e shkarkimit për skedarët audio</string>
@@ -510,10 +506,9 @@
     <string name="download_path_dialog_title">Zgjidhni dosjen e shkarkimit për skedarët video</string>
     <string name="download_path_summary">Skedarët video të shkarkuara ruhen këtu</string>
     <string name="no_player_found_toast">Nuk u gjend lexues për stream (ju mund të instaloni VLC për ta lexuar).</string>
-    <string name="remove_watched_popup_yes_and_partially_watched_videos">Po, dhe videot e shikuara pjesërisht</string>
-    <string name="remove_watched_popup_warning">Videot që janë shikuar më parë dhe pasi janë shtuar në listën e luajtjes do të hiqen.
-\nA jeni të sigurt\? Kjo nuk mund të zhbëhet!</string>
-    <string name="remove_watched_popup_title">Dëshironi t\'i hiqni videot e para\?</string>
+    <string name="remove_watched_popup_partially_watched_streams">Po, dhe videot e shikuara pjesërisht</string>
+    <string name="remove_watched_popup_warning">Videot që janë shikuar më parë dhe pasi janë shtuar në listën e luajtjes do të hiqen. \nA jeni të sigurt? Kjo nuk mund të zhbëhet!</string>
+    <string name="remove_watched_popup_title">Dëshironi t\'i hiqni videot e para?</string>
     <string name="remove_watched">Hiq të parat</string>
     <string name="show_original_time_ago_summary">Tekstet origjinale nga shërbimet do shihen në produktet e luajtshme</string>
     <string name="show_original_time_ago_title">Shfaq titullin origjinal \"kohë më parë\" në objekte</string>
@@ -602,7 +597,6 @@
     <string name="night_theme_summary">Zgjidhni temën tuaj të preferuar të natës - %s</string>
     <string name="auto_device_theme_title">Automatike (tema e pajisjes)</string>
     <string name="radio">Radio</string>
-    <string name="service_provides_reason">%s e jep këtë arsye:</string>
     <string name="account_terminated">Llogaria është mbyllur</string>
     <string name="private_content">Kjo përmbajtje është private, kështu që nuk mund të luhet apo shkarkohet nga NewPipe.</string>
     <string name="georestricted_content">Kjo përmbajtje nuk është e disponueshme në shtetin tuaj.</string>
@@ -651,4 +645,30 @@
     <string name="remove_duplicates">Hiq duplikatet</string>
     <string name="fast_mode">Modi i shpejtë</string>
     <string name="sort">Rradhit</string>
+    <string name="channel_tab_livestreams">Live</string>
+    <string name="channel_tab_albums">Albumet</string>
+    <string name="play">Luaj</string>
+    <string name="duration">Zgjatja</string>
+    <string name="rewind">Rikthe</string>
+    <string name="forward">Para</string>
+    <string name="no_streams">Nuk ka streams</string>
+    <string name="play_queue_audio_track">Audio: %s</string>
+    <string name="metadata_avatars">Avataret</string>
+    <string name="metadata_banners">Banerat</string>
+    <string name="channel_tab_channels">Kanalet</string>
+    <string name="channel_tab_videos">Videot</string>
+    <string name="question_mark">\?</string>
+    <string name="replay">Ri-luaj</string>
+    <string name="yes">Po</string>
+    <string name="no">Jo</string>
+    <string name="channel_tab_about">Rreth</string>
+    <string name="next_stream">Streami i rradhes</string>
+    <string name="notifications">Njoftimet</string>
+    <string name="remote_search_suggestions">Sugjerime jo-lokale për kërkim</string>
+    <string name="faq">Shikoje në faqen ueb</string>
+    <string name="faq_title">Pyetjet më të shpeshta</string>
+    <string name="prefer_original_audio_title">Prefero audion origjinale</string>
+    <string name="prefer_descriptive_audio_title">Prefero audio përshkruese</string>
+    <string name="none">Asnjë</string>
+    <string name="local_search_suggestions">Sugjerime lokale për kërkim</string>
 </resources>

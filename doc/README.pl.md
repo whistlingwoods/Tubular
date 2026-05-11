@@ -1,26 +1,34 @@
-<p align="center"><a href="https://newpipe.net"><img src="../assets/new_pipe_icon_5.png" width="150"></a></p> 
+<p align="center"><a href="https://newpipe.net"><img src="../assets/new_pipe_icon_5.png" width="150"></a></p>
 <h2 align="center"><b>NewPipe</b></h2>
 <h4 align="center">Wolny, lekki streamingowy frontend na Androida.</h4>
 
-<p align="center"><a href="https://f-droid.org/packages/org.schabi.newpipe/"><img src="https://fdroid.gitlab.io/artwork/badge/get-it-on-pl.svg" alt="Pobierz z F-Droid" height=80/></a></p>
+<p align="center"><a href="https://f-droid.org/packages/org.schabi.newpipe/"><img src="https://fdroid.gitlab.io/artwork/badge/get-it-on-pl.svg" alt="Pobierz z F-Droid" width=206/></a></p>
 
 <p align="center">
 <a href="https://github.com/TeamNewPipe/NewPipe/releases" alt="GitHub release"><img src="https://img.shields.io/github/release/TeamNewPipe/NewPipe.svg" ></a>
+<a href="https://github.com/TeamNewPipe/NewPipe-nightly/releases" alt="GitHub NewPipe nightly releases"><img src="https://img.shields.io/github/release/TeamNewPipe/NewPipe-nightly.svg?labelColor=purple&label=dev%20nightly"></a>
+<a href="https://github.com/TeamNewPipe/NewPipe-refactor-nightly/releases" alt="GitHub NewPipe refactor nightly releases"><img src="https://img.shields.io/github/release/TeamNewPipe/NewPipe-refactor-nightly.svg?labelColor=purple&label=refactor%20nightly"></a>
 <a href="https://www.gnu.org/licenses/gpl-3.0" alt="License: GPLv3"><img src="https://img.shields.io/badge/License-GPL%20v3-blue.svg"></a>
-<a href="https://github.com/TeamNewPipe/NewPipe/actions" alt="Build Status"><img src="https://github.com/TeamNewPipe/NewPipe/workflows/CI/badge.svg?branch=dev&event=push"></a>
+<a href="https://github.com/TeamNewPipe/NewPipe/actions" alt="Build Status"><img src="https://github.com/TeamNewPipe/NewPipe/actions/workflows/ci.yml/badge.svg?branch=dev&event=push"></a>
 <a href="https://hosted.weblate.org/engage/newpipe/" alt="Translation Status"><img src="https://hosted.weblate.org/widgets/newpipe/-/svg-badge.svg"></a>
-<a href="https://web.libera.chat/#newpipe" alt="IRC channel: #newpipe"><img src="https://img.shields.io/badge/IRC%20chat-%23newpipe-brightgreen.svg"></a>
 </p>
+
+<p align="center">
+<a href="https://web.libera.chat/#newpipe" alt="IRC channel: #newpipe"><img src="https://img.shields.io/badge/IRC%20chat-%23newpipe-brightgreen.svg"></a>
+<a href="https://matrix.to/#/#newpipe:matrix.newpipe-ev.de" alt="Matrix channel: #newpipe"><img src="https://img.shields.io/badge/Matrix%20chat-%23newpipe-blue"></a>
+</p>
+
 <hr>
 <p align="center"><a href="#screenshoty">Screenshoty</a> &bull; <a href="#opis">Opis</a> &bull; <a href="#funkcje">Funkcje</a> &bull; <a href="#instalacja-i-aktualizacje">Instalacja i aktualizacje</a> &bull; <a href="#wkład">Wkład</a> &bull; <a href="#wesprzyj">Wesprzyj</a> &bull; <a href="#licencja">Licencja</a></p>
 <p align="center"><a href="https://newpipe.net">Strona</a> &bull; <a href="https://newpipe.net/blog/">Blog</a> &bull; <a href="https://newpipe.net/FAQ/">FAQ</a> &bull; <a href="https://newpipe.net/press/">Press</a></p>
 <hr>
 
-*Read this document in other languages: [Deutsch](README.de.md), [English](../README.md), [Español](README.es.md), [Français](README.fr.md), [हिन्दी](README.hi.md), [Italiano](README.it.md), [한국어](README.ko.md), [Português Brasil](README.pt_BR.md), [Polski](README.pl.md), [ਪੰਜਾਬੀ ](README.pa.md), [日本語](README.ja.md), [Română](README.ro.md), [Soomaali](README.so.md), [Türkçe](README.tr.md), [正體中文](README.zh_TW.md), [অসমীয়া](README.asm.md), [うちなーぐち](README.ryu.md), [Српски](README.sr.md)*
+*Read this document in other languages: [Deutsch](README.de.md), [English](../README.md), [Español](README.es.md), [Français](README.fr.md), [हिन्दी](README.hi.md), [Italiano](README.it.md), [한국어](README.ko.md), [Português Brasil](README.pt_BR.md), [Polski](README.pl.md), [ਪੰਜਾਬੀ ](README.pa.md), [日本語](README.ja.md), [Română](README.ro.md), [Soomaali](README.so.md), [Türkçe](README.tr.md), [正體中文](README.zh_TW.md), [অসমীয়া](README.asm.md), [うちなーぐち](README.ryu.md), [Српски](README.sr.md) , [العربية](README.ar.md)*
 
-<b>UWAGA: TO JEST WERSJA BETA, WIĘC MOŻESZ NAPOTKAĆ BŁĘDY. JEŚLI TAK SIĘ STANIE, OTWÓRZ NOWY "ISSUE" NA GITHUBIE.</b>
-
-<b>PUBLIKOWANIE NEWPIPE LUB JAKIEGOKOLWIEK JEGO FORKU W SKLEPIE PLAY NARUSZA ICH WARUNKI UŻYTKOWANIA.</b>
+> [!warning]
+> <b>TO JEST WERSJA BETA, WIĘC MOŻESZ NAPOTKAĆ BŁĘDY. JEŚLI TAK SIĘ STANIE, OTWÓRZ NOWY "ISSUE" NA GITHUBIE.</b>
+>
+> <b>PUBLIKOWANIE NEWPIPE LUB JAKIEGOKOLWIEK JEGO FORKU W SKLEPIE PLAY NARUSZA ICH WARUNKI UŻYTKOWANIA.</b>
 
 ## Screenshoty
 
@@ -60,7 +68,7 @@ NewPipe nie używa żadnych bibliotek Google ani API YouTube. Strony są jedynie
 * Wyszukiwanie kanałów
 * Oglądanie filmów ze strony kanału
 * Wsparcie dla Orbot/Tor (Jeszcze nie bezpośrednio)
-* Wsparcie dla 1080p/2K/4K
+* Wsparcie dla 1080p/1440p/4K
 * Historia oglądania
 * Subskrybowanie kanałów
 * Historia wyszukiwania
@@ -120,14 +128,14 @@ Jeśli podoba Ci się NewPipe, bardzo ucieszylibyśmy się z dotacji. Możesz wy
 
 ## Polityka prywatności
 
-Założeniem projektu NewPipe jest dostarczanie prywatnego, anonimowego dostępu do zasobów i usług internetowych. 
+Założeniem projektu NewPipe jest dostarczanie prywatnego, anonimowego dostępu do zasobów i usług internetowych.
 Dlatego też, ta aplikacja nie zbiera żadnych informacji bez twojej zgody. Polityka prywatności NewPipe dokładnie wyjaśnia jakie dane są wysyłane i przechowywane, gdy wyślesz raport awarii lub komentarz na naszym blogu. Możesz znaleźć ten dokument [tutaj](https://newpipe.net/legal/privacy/).
 
 ## Licencja
-[![GNU GPLv3 Image](https://www.gnu.org/graphics/gplv3-127x51.png)](https://www.gnu.org/licenses/gpl-3.0.en.html)  
+[![GNU GPLv3 Image](https://www.gnu.org/graphics/gplv3-127x51.png)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-NewPipe to wolne oprogramowanie: Możesz używać, uczyć się, udostępniać i ulepszać je do woli. 
+NewPipe to wolne oprogramowanie: Możesz używać, uczyć się, udostępniać i ulepszać je do woli.
 Możesz udostępniać i/lub modyfikować je na zasadach licencji
-[GNU General Public License](https://www.gnu.org/licenses/gpl.html) 
+[GNU General Public License](https://www.gnu.org/licenses/gpl.html)
 publikowaną przez Free Software Foundation, wersję 3 Licencji, lub
-(twój wybór) każdną nowszą wersję.  
+(twój wybór) każdną nowszą wersję.

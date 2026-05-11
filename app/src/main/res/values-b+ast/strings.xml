@@ -43,9 +43,6 @@
     <string name="detail_dislikes_img_view_description">Tarrezmes</string>
     <string name="default_video_format_title">Formatu de videu predetermináu</string>
     <string name="black_theme_title">Prietu</string>
-    <string name="short_thousand">mil</string>
-    <string name="short_million">mill.</string>
-    <string name="short_billion">mil mill.</string>
     <string name="msg_popup_permission">Precísase esti permisu p\'abrir
 \nnel mou ventanu</string>
     <string name="title_activity_recaptcha">Retu de reCAPTCHA</string>
@@ -54,7 +51,7 @@
     <string name="controls_popup_title">Ventanu</string>
     <string name="default_popup_resolution_title">Resolución predeterminada del ventanu</string>
     <string name="show_higher_resolutions_title">Amosar resoluciones más altes</string>
-    <string name="show_higher_resolutions_summary">Namás dalgunos preseos puen reproducir videos en 2K/4K</string>
+    <string name="show_higher_resolutions_summary">Namás dalgunos preseos puen reproducir videos en 1440p/4K</string>
     <string name="clear">Llimpiar</string>
     <string name="use_external_video_player_summary">Quita l\'audiu en dalgunes resoluciones</string>
     <string name="show_search_suggestions_title">Suxerencies de busca</string>
@@ -171,7 +168,7 @@
     <string name="overwrite_finished_warning">Yá esiste un ficheru baxáu con esti nome</string>
     <string name="overwrite_failed">nun pue sobrecribise\'l ficheru</string>
     <string name="download_already_pending">Hai una descarga pendiente con esti nome</string>
-    <string name="error_insufficient_storage">Nun queda espaciu nel preséu</string>
+    <string name="error_insufficient_storage_left">Nun queda espaciu nel preséu</string>
     <string name="error_timeout">Escosó\'l tiempu d\'espera de la conexón</string>
     <string name="subscriptions_import_unsuccessful">Nun pudieron importase les soscripciones</string>
     <string name="caption_setting_title">Sotítulos</string>
@@ -223,7 +220,6 @@
     <string name="privacy_policy_title">Política de privacidá de NewPipe</string>
     <string name="error_file_creation">El ficheru nun pue crease</string>
     <string name="error_http_no_content">El sirvidor nun unvia datos</string>
-    <string name="localization_changes_requires_app_restart">La llingua va camudar namás que se reanicie l\'aplicación.</string>
     <string name="search">Buscar</string>
     <string name="share_dialog_title">Compartir con</string>
     <string name="subscribed_button_title">Soscribiéstite</string>
@@ -271,7 +267,7 @@
     <string name="metadata_cache_wipe_title">Llimpiar los metadatos de la caché</string>
     <string name="thumbnail_cache_wipe_complete_notice">Llimpióse la caché d\'imáxenes</string>
     <string name="kore_not_found">¿Instalar Kode\?</string>
-    <string name="info_labels">Qué asocedió:\\nSolicitú:\\nLlingua del conteníu:\\nPaís del conteníu:\\nLlingua de l\'aplicación:\\nServiciu:\\nHora en GMT:\\nPaquete:\\nVersión de l\'aplicación:\\nVersión del SO:</string>
+    <string name="info_labels">Qué asocedió:\nSolicitú:\nLlingua del conteníu:\nPaís del conteníu:\nLlingua de l\'aplicación:\nServiciu:\nHora en GMT:\nPaquete:\nVersión de l\'aplicación:\nVersión del SO:</string>
     <string name="no_player_found_toast">Nun s\'atopó nengún reproductor de fluxos (pues instalar VLC pa reproducilos).</string>
     <string name="show_thumbnail_summary">Amuesa una miniatura nel fondu de la pantalla de bloquéu y dientro de los avisos</string>
     <string name="show_thumbnail_title">Amosar una miniatura</string>
@@ -316,10 +312,9 @@
     <string name="feed_oldest_subscription_update">Últimu anovamientu del feed: %s</string>
     <string name="feed_groups_header_title">Grupos de canales</string>
     <string name="new_seek_duration_toast">Pola mor de les torgues d\'ExoPlayer la duración afitóse en %d segundos</string>
-    <string name="remove_watched_popup_yes_and_partially_watched_videos">Sí, y tamién los vistos parcialmente</string>
-    <string name="remove_watched_popup_warning">Van desaniciase los vídeos que se vieren enantes y dempués d\'amestase a la llista de reproducción.
-\n¿De xuru\? ¡Esto nun pue desfacese!</string>
-    <string name="remove_watched_popup_title">¿Desaniciar los vídeos vistos\?</string>
+    <string name="remove_watched_popup_partially_watched_streams">Sí, y tamién los vistos parcialmente</string>
+    <string name="remove_watched_popup_warning">Van desaniciase los vídeos que se vieren enantes y dempués d\'amestase a la llista de reproducción. \n¿De xuru? ¡Esto nun pue desfacese!</string>
+    <string name="remove_watched_popup_title">¿Desaniciar los vídeos vistos?</string>
     <string name="remove_watched">Desaniciar lo visto</string>
     <string name="choose_instance_prompt">Escoyeta d\'una instancia</string>
     <string name="downloads_storage_use_saf_summary">El «Storage Access Framework» permite les descargues nuna tarxeta SD esterna.

@@ -92,7 +92,7 @@ public final class TextLinkifier {
      * {@link HtmlCompat#fromHtml(String, int)}.
      * </p>
      *
-     * @param textView           the {@link TextView} to set the the HTML string block linked
+     * @param textView           the {@link TextView} to set the HTML string block linked
      * @param htmlBlock          the HTML string block to be linked
      * @param htmlCompatFlag     the int flag to be set when {@link HtmlCompat#fromHtml(String,
      *                           int)} will be called
@@ -192,7 +192,7 @@ public final class TextLinkifier {
      * <p>
      * Instead of using an {@link android.content.Intent#ACTION_VIEW} intent in the description of
      * a content, this method will parse the {@link CharSequence} and replace all current web links
-     * with {@link ShareUtils#openUrlInBrowser(Context, String, boolean)}.
+     * with {@link ShareUtils#openUrlInBrowser(Context, String)}.
      * </p>
      *
      * <p>
@@ -240,7 +240,7 @@ public final class TextLinkifier {
                     for (final URLSpan span : urls) {
                         final String url = span.getURL();
                         final LongPressClickableSpan longPressClickableSpan =
-                                new UrlLongPressClickableSpan(context, disposables, url);
+                                new UrlLongPressClickableSpan(context, url);
 
                         textBlockLinked.setSpan(longPressClickableSpan,
                                 textBlockLinked.getSpanStart(span),
