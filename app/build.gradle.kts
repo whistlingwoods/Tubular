@@ -39,7 +39,7 @@ configure<ApplicationExtension> {
     namespace = "org.schabi.newpipe"
 
     defaultConfig {
-        applicationId = "org.schabi.newpipe"
+        applicationId = "wah.mikooo.newpipe"
         resValue("string", "app_name", "NewPipe")
         minSdk = 23
         targetSdk = 35
@@ -47,6 +47,9 @@ configure<ApplicationExtension> {
         versionCode = System.getProperty("versionCodeOverride")?.toInt() ?: 1010
 
         versionName = "0.28.5"
+        versionName += "-sponsorblock"
+        versionName += "-r2"
+
         System.getProperty("versionNameSuffix")?.let { versionNameSuffix = it }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
