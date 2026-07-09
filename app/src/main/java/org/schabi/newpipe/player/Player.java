@@ -24,12 +24,12 @@ import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK_ADJ
 import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_SKIP;
 import static com.google.android.exoplayer2.Player.DiscontinuityReason;
 import static com.google.android.exoplayer2.Player.Listener;
+import static com.google.android.exoplayer2.Player.REPEAT_MODE_ALL;
 import static com.google.android.exoplayer2.Player.REPEAT_MODE_OFF;
 import static com.google.android.exoplayer2.Player.REPEAT_MODE_ONE;
 import static com.google.android.exoplayer2.Player.RepeatMode;
 import static org.schabi.newpipe.extractor.ServiceList.YouTube;
 import static org.schabi.newpipe.extractor.utils.Utils.isNullOrEmpty;
-import static org.schabi.newpipe.player.helper.PlayerHelper.nextRepeatMode;
 import static org.schabi.newpipe.player.helper.PlayerHelper.retrievePlaybackParametersFromPrefs;
 import static org.schabi.newpipe.player.helper.PlayerHelper.retrieveSeekDurationFromPreferences;
 import static org.schabi.newpipe.player.helper.PlayerHelper.savePlaybackParametersToPrefs;
@@ -46,13 +46,14 @@ import static org.schabi.newpipe.util.ListHelper.getPopupResolutionIndex;
 import static org.schabi.newpipe.util.ListHelper.getResolutionIndex;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+import static coil3.Image_androidKt.toBitmap;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
@@ -61,6 +62,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.IntentCompat;
 import androidx.core.math.MathUtils;
 import androidx.preference.PreferenceManager;
 
@@ -80,8 +83,6 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.video.VideoSize;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 
 import org.schabi.newpipe.MainActivity;
 import org.schabi.newpipe.R;
@@ -112,15 +113,18 @@ import org.schabi.newpipe.player.playback.MediaSourceManager;
 import org.schabi.newpipe.player.playback.PlaybackListener;
 import org.schabi.newpipe.player.playqueue.PlayQueue;
 import org.schabi.newpipe.player.playqueue.PlayQueueItem;
+import org.schabi.newpipe.player.playqueue.SinglePlayQueue;
 import org.schabi.newpipe.player.resolver.AudioPlaybackResolver;
 import org.schabi.newpipe.player.resolver.VideoPlaybackResolver;
 import org.schabi.newpipe.player.resolver.VideoPlaybackResolver.SourceType;
+import org.schabi.newpipe.player.ui.BackgroundPlayerUi;
 import org.schabi.newpipe.player.ui.MainPlayerUi;
 import org.schabi.newpipe.player.ui.PlayerUi;
 import org.schabi.newpipe.player.ui.PlayerUiList;
 import org.schabi.newpipe.player.ui.PopupPlayerUi;
 import org.schabi.newpipe.player.ui.VideoPlayerUi;
 import org.schabi.newpipe.util.DependentPreferenceHelper;
+import org.schabi.newpipe.util.ExtractorHelper;
 import org.schabi.newpipe.util.ListHelper;
 import org.schabi.newpipe.util.NavigationHelper;
 import org.schabi.newpipe.util.SponsorBlockMode;
@@ -128,17 +132,21 @@ import org.schabi.newpipe.util.SponsorBlockSecondaryMode;
 import org.schabi.newpipe.util.SponsorBlockHelper;
 import org.schabi.newpipe.util.SerializedCache;
 import org.schabi.newpipe.util.StreamTypeUtil;
-import org.schabi.newpipe.util.image.PicassoHelper;
+import org.schabi.newpipe.util.image.CoilHelper;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
+import coil3.target.Target;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.disposables.SerialDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public final class Player implements PlaybackListener, Listener {
     public static final boolean DEBUG = MainActivity.DEBUG;
@@ -160,15 +168,13 @@ public final class Player implements PlaybackListener, Listener {
     // Intent
     //////////////////////////////////////////////////////////////////////////*/
 
-    public static final String REPEAT_MODE = "repeat_mode";
     public static final String PLAYBACK_QUALITY = "playback_quality";
     public static final String PLAY_QUEUE_KEY = "play_queue_key";
-    public static final String ENQUEUE = "enqueue";
-    public static final String ENQUEUE_NEXT = "enqueue_next";
     public static final String RESUME_PLAYBACK = "resume_playback";
     public static final String PLAY_WHEN_READY = "play_when_ready";
     public static final String PLAYER_TYPE = "player_type";
-    public static final String IS_MUTED = "is_muted";
+    public static final String PLAYER_INTENT_TYPE = "player_intent_type";
+    public static final String PLAYER_INTENT_DATA = "player_intent_data";
 
     /*//////////////////////////////////////////////////////////////////////////
     // Time constants
@@ -183,7 +189,6 @@ public final class Player implements PlaybackListener, Listener {
     //////////////////////////////////////////////////////////////////////////*/
 
     public static final int RENDERER_UNAVAILABLE = -1;
-    private static final String PICASSO_PLAYER_THUMBNAIL_TAG = "PICASSO_PLAYER_THUMBNAIL_TAG";
 
     /*//////////////////////////////////////////////////////////////////////////
     // Playback
@@ -202,6 +207,8 @@ public final class Player implements PlaybackListener, Listener {
     private MediaItemTag currentMetadata;
     @Nullable
     private Bitmap currentThumbnail;
+    @Nullable
+    private coil3.request.Disposable thumbnailDisposable;
 
     /*//////////////////////////////////////////////////////////////////////////
     // Player
@@ -254,12 +261,8 @@ public final class Player implements PlaybackListener, Listener {
     private final SerialDisposable progressUpdateDisposable = new SerialDisposable();
     @NonNull
     private final CompositeDisposable databaseUpdateDisposable = new CompositeDisposable();
-
-    // This is the only listener we need for thumbnail loading, since there is always at most only
-    // one thumbnail being loaded at a time. This field is also here to maintain a strong reference,
-    // which would otherwise be garbage collected since Picasso holds weak references to targets.
     @NonNull
-    private final Target currentThumbnailTarget;
+    private final CompositeDisposable streamItemDisposable = new CompositeDisposable();
 
     /*//////////////////////////////////////////////////////////////////////////
     // Utils
@@ -275,6 +278,7 @@ public final class Player implements PlaybackListener, Listener {
     private SponsorBlockSegment lastSegment;
     private boolean autoSkipGracePeriod = false;
 
+    private boolean screenOn = true;
     private final SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
 
     /*//////////////////////////////////////////////////////////////////////////
@@ -336,8 +340,6 @@ public final class Player implements PlaybackListener, Listener {
         videoResolver = new VideoPlaybackResolver(context, dataSource, getQualityResolver());
         audioResolver = new AudioPlaybackResolver(context, dataSource);
 
-        currentThumbnailTarget = getCurrentThumbnailTarget();
-
         // The UIs added here should always be present. They will be initialized when the player
         // reaches the initialization step. Make sure the media session ui is before the
         // notification ui in the UIs list, since the notification depends on the media session in
@@ -377,49 +379,124 @@ public final class Player implements PlaybackListener, Listener {
 
     @SuppressWarnings("MethodLength")
     public void handleIntent(@NonNull final Intent intent) {
-        // fail fast if no play queue was provided
-        final String queueCache = intent.getStringExtra(PLAY_QUEUE_KEY);
-        if (queueCache == null) {
+        final var playerIntentType = IntentCompat.getSerializableExtra(intent, PLAYER_INTENT_TYPE,
+                PlayerIntentType.class);
+        if (playerIntentType == null) {
             return;
         }
-        final PlayQueue newQueue = SerializedCache.getInstance().take(queueCache, PlayQueue.class);
-        if (newQueue == null) {
-            return;
+        // TODO: this should be in the second switch below, but I’m not sure whether I
+        // can move the initUIs stuff without breaking the setup for edge cases somehow.
+        // when playing from a timestamp, keep the current player as-is.
+        if (playerIntentType != PlayerIntentType.TimestampChange) {
+            playerType = IntentCompat.getSerializableExtra(intent, PLAYER_TYPE, PlayerType.class);
         }
-
-        final PlayerType oldPlayerType = playerType;
-        playerType = PlayerType.retrieveFromIntent(intent);
         initUIsForCurrentPlayerType();
-        // We need to setup audioOnly before super(), see "sourceOf"
         isAudioOnly = audioPlayerSelected();
 
         if (intent.hasExtra(PLAYBACK_QUALITY)) {
             videoResolver.setPlaybackQuality(intent.getStringExtra(PLAYBACK_QUALITY));
         }
 
-        // Resolve enqueue intents
-        if (intent.getBooleanExtra(ENQUEUE, false) && playQueue != null) {
-            playQueue.append(newQueue.getStreams());
-            return;
+        final boolean playWhenReady = intent.getBooleanExtra(PLAY_WHEN_READY, true);
 
-            // Resolve enqueue next intents
-        } else if (intent.getBooleanExtra(ENQUEUE_NEXT, false) && playQueue != null) {
-            final int currentIndex = playQueue.getIndex();
-            playQueue.append(newQueue.getStreams());
-            playQueue.move(playQueue.size() - 1, currentIndex + 1);
+        switch (playerIntentType) {
+            case Enqueue -> {
+                if (playQueue != null) {
+                    final PlayQueue newQueue = getPlayQueueFromCache(intent);
+                    if (newQueue == null) {
+                        return;
+                    }
+                    playQueue.append(newQueue.getStreams());
+                    return;
+                }
+
+                // TODO: This falls through to the old logic, there was no playQueue
+                // yet so we should start the player and add the new video
+                break;
+            }
+            case EnqueueNext -> {
+                if (playQueue != null) {
+                    final PlayQueue newQueue = getPlayQueueFromCache(intent);
+                    if (newQueue == null) {
+                        return;
+                    }
+                    final PlayQueueItem newItem = newQueue.getStreams().get(0);
+                    playQueue.enqueueNext(newItem, false);
+                    return;
+                }
+
+                // TODO: This falls through to the old logic, there was no playQueue
+                // yet so we should start the player and add the new video
+                break;
+            }
+            case TimestampChange -> {
+                final var data = Objects.requireNonNull(IntentCompat.getParcelableExtra(intent,
+                        PLAYER_INTENT_DATA, TimestampChangeData.class));
+                final Single<StreamInfo> single =
+                        ExtractorHelper.getStreamInfo(context,
+                                                      data.getServiceId(),
+                                                      data.getUrl(),
+                                                      false);
+                streamItemDisposable.add(single.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(info -> {
+                            final @Nullable PlayQueue oldPlayQueue = playQueue;
+                            info.setStartPosition(data.getSeconds());
+                            final PlayQueueItem playQueueItem = new PlayQueueItem(info);
+
+                            // If the stream is already playing,
+                            // we can just seek to the appropriate timestamp
+                            if (oldPlayQueue != null
+                                    && playQueueItem.isSameItem(oldPlayQueue.getItem())) {
+                                // Player can have state = IDLE when playback is stopped or failed
+                                // and we should retry in this case
+                                if (simpleExoPlayer.getPlaybackState()
+                                        == com.google.android.exoplayer2.Player.STATE_IDLE) {
+                                    simpleExoPlayer.prepare();
+                                }
+                                simpleExoPlayer.seekTo(oldPlayQueue.getIndex(),
+                                        data.getSeconds() * 1000L);
+                                simpleExoPlayer.setPlayWhenReady(playWhenReady);
+
+                            } else {
+                                final PlayQueue newPlayQueue;
+
+                                // If there is no queue yet, just add our item
+                                if (oldPlayQueue == null) {
+                                    newPlayQueue = new SinglePlayQueue(playQueueItem);
+
+                                // else we add the timestamped stream behind the current video
+                                // and start playing it.
+                                } else {
+                                    oldPlayQueue.enqueueNext(playQueueItem, true);
+                                    oldPlayQueue.offsetIndex(1);
+                                    newPlayQueue = oldPlayQueue;
+                                }
+                                initPlayback(newPlayQueue, playWhenReady);
+                            }
+
+                        }, throwable -> {
+                            // This will only show a snackbar if the passed context has a root view:
+                            // otherwise it will resort to showing a notification, so we are safe
+                            // here.
+                            final var info = new ErrorInfo(throwable, UserAction.PLAY_ON_POPUP,
+                                    data.getUrl(), null, data.getUrl());
+                            ErrorUtil.createNotification(context, info);
+                        }));
+                return;
+            }
+            case AllOthers -> {
+                // fallthrough; TODO: put other intent data in separate cases
+            }
+        }
+
+        final PlayQueue newQueue = getPlayQueueFromCache(intent);
+        if (newQueue == null) {
             return;
         }
 
-        final PlaybackParameters savedParameters = retrievePlaybackParametersFromPrefs(this);
-        final float playbackSpeed = savedParameters.speed;
-        final float playbackPitch = savedParameters.pitch;
-        final boolean playbackSkipSilence = getPrefs().getBoolean(getContext().getString(
-                R.string.playback_skip_silence_key), getPlaybackSkipSilence());
-
+        // branching parameters for below
         final boolean samePlayQueue = playQueue != null && playQueue.equalStreamsAndIndex(newQueue);
-        final int repeatMode = intent.getIntExtra(REPEAT_MODE, getRepeatMode());
-        final boolean playWhenReady = intent.getBooleanExtra(PLAY_WHEN_READY, true);
-        final boolean isMuted = intent.getBooleanExtra(IS_MUTED, isMuted());
 
         /*
          * TODO As seen in #7427 this does not work:
@@ -434,7 +511,7 @@ public final class Player implements PlaybackListener, Listener {
         if (!exoPlayerIsNull()
                 && newQueue.size() == 1 && newQueue.getItem() != null
                 && playQueue != null && playQueue.size() == 1 && playQueue.getItem() != null
-                && newQueue.getItem().getUrl().equals(playQueue.getItem().getUrl())
+                && newQueue.getItem().isSameItem(playQueue.getItem())
                 && newQueue.getItem().getRecoveryPosition() != PlayQueueItem.RECOVERY_UNSET) {
             // Player can have state = IDLE when playback is stopped or failed
             // and we should retry in this case
@@ -460,7 +537,8 @@ public final class Player implements PlaybackListener, Listener {
 
         } else if (intent.getBooleanExtra(RESUME_PLAYBACK, false)
                 && DependentPreferenceHelper.getResumePlaybackEnabled(context)
-                && !samePlayQueue
+                // !samePlayQueue
+                && (playQueue == null || !playQueue.equalStreamsAndIndex(newQueue))
                 && !newQueue.isEmpty()
                 && newQueue.getItem() != null
                 && newQueue.getItem().getRecoveryPosition() == PlayQueueItem.RECOVERY_UNSET) {
@@ -476,30 +554,30 @@ public final class Player implements PlaybackListener, Listener {
                                     newQueue.setRecovery(newQueue.getIndex(),
                                             state.getProgressMillis());
                                 }
-                                initPlayback(newQueue, repeatMode, playbackSpeed, playbackPitch,
-                                        playbackSkipSilence, playWhenReady, isMuted);
+                                initPlayback(newQueue, playWhenReady);
                             },
                             error -> {
                                 if (DEBUG) {
                                     Log.w(TAG, "Failed to start playback", error);
                                 }
                                 // In case any error we can start playback without history
-                                initPlayback(newQueue, repeatMode, playbackSpeed, playbackPitch,
-                                        playbackSkipSilence, playWhenReady, isMuted);
+                                initPlayback(newQueue, playWhenReady);
                             },
                             () -> {
                                 // Completed but not found in history
-                                initPlayback(newQueue, repeatMode, playbackSpeed, playbackPitch,
-                                        playbackSkipSilence, playWhenReady, isMuted);
+                                initPlayback(newQueue, playWhenReady);
                             }
                     ));
         } else {
             // Good to go...
             // In a case of equal PlayQueues we can re-init old one but only when it is disposed
-            initPlayback(samePlayQueue ? playQueue : newQueue, repeatMode, playbackSpeed,
-                    playbackPitch, playbackSkipSilence, playWhenReady, isMuted);
+            initPlayback(samePlayQueue ? playQueue : newQueue, playWhenReady);
         }
 
+    }
+
+
+    public void handleIntentPost(final PlayerType oldPlayerType) {
         if (oldPlayerType != playerType && playQueue != null) {
             // If playerType changes from one to another we should reload the player
             // (to disable/enable video stream or to set quality)
@@ -510,8 +588,18 @@ public final class Player implements PlaybackListener, Listener {
         NavigationHelper.sendPlayerStartedEvent(context);
     }
 
+    @Nullable
+    private static PlayQueue getPlayQueueFromCache(@NonNull final Intent intent) {
+        final String queueCache = intent.getStringExtra(PLAY_QUEUE_KEY);
+        if (queueCache == null) {
+            return null;
+        }
+        return SerializedCache.getInstance().take(queueCache, PlayQueue.class);
+    }
+
     private void initUIsForCurrentPlayerType() {
         if ((UIs.get(MainPlayerUi.class).isPresent() && playerType == PlayerType.MAIN)
+                || (UIs.get(BackgroundPlayerUi.class).isPresent() && playerType == PlayerType.AUDIO)
                 || (UIs.get(PopupPlayerUi.class).isPresent() && playerType == PlayerType.POPUP)) {
             // correct UI already in place
             return;
@@ -530,29 +618,29 @@ public final class Player implements PlaybackListener, Listener {
         switch (playerType) {
             case MAIN:
                 UIs.destroyAll(PopupPlayerUi.class);
+                UIs.destroyAll(BackgroundPlayerUi.class);
                 UIs.addAndPrepare(new MainPlayerUi(this, binding));
                 break;
             case POPUP:
                 UIs.destroyAll(MainPlayerUi.class);
+                UIs.destroyAll(BackgroundPlayerUi.class);
                 UIs.addAndPrepare(new PopupPlayerUi(this, binding));
                 break;
             case AUDIO:
-                UIs.destroyAll(VideoPlayerUi.class);
+                UIs.destroyAll(VideoPlayerUi.class); // destroys both MainPlayerUi and PopupPlayerUi
+                UIs.addAndPrepare(new BackgroundPlayerUi(this));
                 break;
         }
     }
 
     private void initPlayback(@NonNull final PlayQueue queue,
-                              @RepeatMode final int repeatMode,
-                              final float playbackSpeed,
-                              final float playbackPitch,
-                              final boolean playbackSkipSilence,
-                              final boolean playOnReady,
-                              final boolean isMuted) {
+                              final boolean playOnReady) {
         destroyPlayer();
         initPlayer(playOnReady);
-        setRepeatMode(repeatMode);
-        setPlaybackParameters(playbackSpeed, playbackPitch, playbackSkipSilence);
+        final boolean playbackSkipSilence = getPrefs().getBoolean(getContext().getString(
+                R.string.playback_skip_silence_key), getPlaybackSkipSilence());
+        final PlaybackParameters savedParameters = retrievePlaybackParametersFromPrefs(this);
+        setPlaybackParameters(savedParameters.speed, savedParameters.pitch, playbackSkipSilence);
 
         playQueue = queue;
         playQueue.init();
@@ -560,7 +648,7 @@ public final class Player implements PlaybackListener, Listener {
 
         UIs.call(PlayerUi::initPlayback);
 
-        simpleExoPlayer.setVolume(isMuted ? 0 : 1);
+        simpleExoPlayer.setVolume(isMuted() ? 0 : 1);
         notifyQueueUpdateToListeners();
     }
 
@@ -642,7 +730,7 @@ public final class Player implements PlaybackListener, Listener {
 
         databaseUpdateDisposable.clear();
         progressUpdateDisposable.set(null);
-        cancelLoadingCurrentThumbnail();
+        streamItemDisposable.clear();
 
         UIs.destroyAll(Object.class); // destroy every UI: obviously every UI extends Object
     }
@@ -782,6 +870,12 @@ public final class Player implements PlaybackListener, Listener {
             case ACTION_SHUFFLE:
                 toggleShuffleModeEnabled();
                 break;
+            case Intent.ACTION_SCREEN_OFF:
+                screenOn = false;
+                break;
+            case Intent.ACTION_SCREEN_ON:
+                screenOn = true;
+                break;
             case Intent.ACTION_CONFIGURATION_CHANGED:
                 if (DEBUG) {
                     Log.d(TAG, "ACTION_CONFIGURATION_CHANGED received");
@@ -795,7 +889,8 @@ public final class Player implements PlaybackListener, Listener {
     private void registerBroadcastReceiver() {
         // Try to unregister current first
         unregisterBroadcastReceiver();
-        context.registerReceiver(broadcastReceiver, intentFilter);
+        ContextCompat.registerReceiver(context, broadcastReceiver, intentFilter,
+                ContextCompat.RECEIVER_EXPORTED);
     }
 
     private void unregisterBroadcastReceiver() {
@@ -815,67 +910,58 @@ public final class Player implements PlaybackListener, Listener {
     //////////////////////////////////////////////////////////////////////////*/
     //region Thumbnail loading
 
-    private Target getCurrentThumbnailTarget() {
-        // a Picasso target is just a listener for thumbnail loading events
-        return new Target() {
-            @Override
-            public void onBitmapLoaded(final Bitmap bitmap, final Picasso.LoadedFrom from) {
-                if (DEBUG) {
-                    Log.d(TAG, "Thumbnail - onBitmapLoaded() called with: bitmap = [" + bitmap
-                            + " -> " + bitmap.getWidth() + "x" + bitmap.getHeight() + "], from = ["
-                            + from + "]");
-                }
-                // there is a new thumbnail, so e.g. the end screen thumbnail needs to change, too.
-                onThumbnailLoaded(bitmap);
-            }
-
-            @Override
-            public void onBitmapFailed(final Exception e, final Drawable errorDrawable) {
-                Log.e(TAG, "Thumbnail - onBitmapFailed() called", e);
-                // there is a new thumbnail, so e.g. the end screen thumbnail needs to change, too.
-                onThumbnailLoaded(null);
-            }
-
-            @Override
-            public void onPrepareLoad(final Drawable placeHolderDrawable) {
-                if (DEBUG) {
-                    Log.d(TAG, "Thumbnail - onPrepareLoad() called");
-                }
-            }
-        };
-    }
-
     private void loadCurrentThumbnail(final List<Image> thumbnails) {
         if (DEBUG) {
             Log.d(TAG, "Thumbnail - loadCurrentThumbnail() called with thumbnails = ["
                     + thumbnails.size() + "]");
         }
 
-        // first cancel any previous loading
-        cancelLoadingCurrentThumbnail();
+        // Cancel any ongoing image loading
+        if (thumbnailDisposable != null) {
+            thumbnailDisposable.dispose();
+        }
 
         // Unset currentThumbnail, since it is now outdated. This ensures it is not used in media
-        // session metadata while the new thumbnail is being loaded by Picasso.
+        // session metadata while the new thumbnail is being loaded by Coil.
         onThumbnailLoaded(null);
         if (thumbnails.isEmpty()) {
             return;
         }
 
         // scale down the notification thumbnail for performance
-        PicassoHelper.loadScaledDownThumbnail(context, thumbnails)
-                .tag(PICASSO_PLAYER_THUMBNAIL_TAG)
-                .into(currentThumbnailTarget);
+        final var thumbnailTarget = new Target() {
+            @Override
+            public void onError(@Nullable final coil3.Image error) {
+                Log.e(TAG, "Thumbnail - onError() called");
+                // there is a new thumbnail, so e.g. the end screen thumbnail needs to change, too.
+                onThumbnailLoaded(null);
+            }
+
+            @Override
+            public void onStart(@Nullable final coil3.Image placeholder) {
+                if (DEBUG) {
+                    Log.d(TAG, "Thumbnail - onStart() called");
+                }
+            }
+
+            @Override
+            public void onSuccess(@NonNull final coil3.Image result) {
+                if (DEBUG) {
+                    Log.d(TAG, "Thumbnail - onSuccess() called with: drawable = [" + result + "]");
+                }
+                // there is a new thumbnail, so e.g. the end screen thumbnail needs to change, too.
+                onThumbnailLoaded(toBitmap(result));
+            }
+        };
+        thumbnailDisposable = CoilHelper.INSTANCE
+                .loadScaledDownThumbnail(context, thumbnails, thumbnailTarget);
     }
 
-    private void cancelLoadingCurrentThumbnail() {
-        // cancel the Picasso job associated with the player thumbnail, if any
-        PicassoHelper.cancelTag(PICASSO_PLAYER_THUMBNAIL_TAG);
-    }
 
     private void onThumbnailLoaded(@Nullable final Bitmap bitmap) {
         // Avoid useless thumbnail updates, if the thumbnail has not actually changed. Based on the
         // thumbnail loading code, this if would be skipped only when both bitmaps are `null`, since
-        // onThumbnailLoaded won't be called twice with the same nonnull bitmap by Picasso's target.
+        // onThumbnailLoaded won't be called twice with the same nonnull bitmap by Coil's target.
         if (currentThumbnail != bitmap) {
             currentThumbnail = bitmap;
             UIs.call(playerUi -> playerUi.onThumbnailLoaded(bitmap));
@@ -1333,14 +1419,23 @@ public final class Player implements PlaybackListener, Listener {
         return exoPlayerIsNull() ? REPEAT_MODE_OFF : simpleExoPlayer.getRepeatMode();
     }
 
-    public void setRepeatMode(@RepeatMode final int repeatMode) {
+    public void cycleNextRepeatMode() {
         if (!exoPlayerIsNull()) {
+            @RepeatMode final int repeatMode;
+            switch (simpleExoPlayer.getRepeatMode()) {
+                case REPEAT_MODE_OFF:
+                    repeatMode = REPEAT_MODE_ONE;
+                    break;
+                case REPEAT_MODE_ONE:
+                    repeatMode = REPEAT_MODE_ALL;
+                    break;
+                case REPEAT_MODE_ALL:
+                default:
+                    repeatMode = REPEAT_MODE_OFF;
+                    break;
+            }
             simpleExoPlayer.setRepeatMode(repeatMode);
         }
-    }
-
-    public void cycleNextRepeatMode() {
-        setRepeatMode(nextRepeatMode(getRepeatMode()));
     }
 
     @Override
@@ -1454,7 +1549,8 @@ public final class Player implements PlaybackListener, Listener {
                         UserAction.PLAY_STREAM,
                         "Loading failed for [" + currentMetadata.getTitle()
                                 + "]: " + currentMetadata.getStreamUrl(),
-                        currentMetadata.getServiceId());
+                        currentMetadata.getServiceId(),
+                        currentMetadata.getStreamUrl());
                 ErrorUtil.createNotification(context, errorInfo);
             }
 
@@ -1670,7 +1766,7 @@ public final class Player implements PlaybackListener, Listener {
             errorInfo = new ErrorInfo(error, UserAction.PLAY_STREAM,
                     "Player error[type=" + error.getErrorCodeName()
                             + "] occurred while playing " + currentMetadata.getStreamUrl(),
-                    currentMetadata.getServiceId());
+                    currentMetadata.getServiceId(), currentMetadata.getStreamUrl());
         }
         ErrorUtil.createNotification(context, errorInfo);
     }
@@ -1823,6 +1919,13 @@ public final class Player implements PlaybackListener, Listener {
             } else {
                 playQueue.setIndex(0);
             }
+        }
+
+        if (isStopped()) {
+            // Some phones suspend a paused player after 10 minutes. This causes the player to
+            // enter STATE_IDLE, causing playback to fail. So we try to recover from that here.
+            setRecovery();
+            reloadPlayQueueManager();
         }
 
         simpleExoPlayer.play();
@@ -2100,7 +2203,7 @@ public final class Player implements PlaybackListener, Listener {
         // resolver was called when the app was in background, the app will only stream audio when
         // the user come back to the app and will never fetch the video stream.
         // Note that the video is not fetched when the app is in background because the video
-        // renderer is fully disabled (see useVideoSource method), except for HLS streams
+        // renderer is fully disabled (see useVideoAndSubtitles method), except for HLS streams
         // (see https://github.com/google/ExoPlayer/issues/9282).
         return videoResolver.resolve(info);
     }
@@ -2266,12 +2369,19 @@ public final class Player implements PlaybackListener, Listener {
         }
     }
 
-    public void useVideoSource(final boolean videoEnabled) {
-        if (playQueue == null || audioPlayerSelected()) {
+    public void useVideoAndSubtitles(final boolean videoAndSubtitlesEnabled) {
+        if (playQueue == null) {
             return;
         }
 
-        isAudioOnly = !videoEnabled;
+        isAudioOnly = !videoAndSubtitlesEnabled;
+
+        final var item = playQueue.getItem();
+        final boolean hasPendingRecovery =
+                item != null && item.getRecoveryPosition() != PlayQueueItem.RECOVERY_UNSET;
+        final boolean hasTimeline =
+                !exoPlayerIsNull() && !simpleExoPlayer.getCurrentTimeline().isEmpty();
+
 
         getCurrentStreamInfo().ifPresentOrElse(info -> {
             // In case we don't know the source type, fall back to either video-with-audio, or
@@ -2279,27 +2389,34 @@ public final class Player implements PlaybackListener, Listener {
             final SourceType sourceType = videoResolver.getStreamSourceType()
                     .orElse(SourceType.VIDEO_WITH_AUDIO_OR_AUDIO_ONLY);
 
+            if (hasTimeline || !hasPendingRecovery) {
+                // making sure to save playback position before reloadPlayQueueManager()
+                setRecovery();
+            }
+
             if (playQueueManagerReloadingNeeded(sourceType, info, getVideoRendererIndex())) {
                 reloadPlayQueueManager();
             }
-
-            setRecovery();
-
-            // Disable or enable video and subtitles renderers depending of the videoEnabled value
-            trackSelector.setParameters(trackSelector.buildUponParameters()
-                    .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, !videoEnabled)
-                    .setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, !videoEnabled));
         }, () -> {
             /*
             The current metadata may be null sometimes (for e.g. when using an unstable connection
-            in livestreams) so we will be not able to execute the block below
+            in livestreams) so we will be not able to execute the block above
 
             Reload the play queue manager in this case, which is the behavior when we don't know the
             index of the video renderer or playQueueManagerReloadingNeeded returns true
             */
+            if (hasTimeline || !hasPendingRecovery) {
+                // making sure to save playback position before reloadPlayQueueManager()
+                setRecovery();
+            }
             reloadPlayQueueManager();
-            setRecovery();
         });
+
+        // Disable or enable video and subtitles renderers depending of the
+        // videoAndSubtitlesEnabled value
+        trackSelector.setParameters(trackSelector.buildUponParameters()
+                .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, !videoAndSubtitlesEnabled)
+                .setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, !videoAndSubtitlesEnabled));
     }
 
     /**
@@ -2681,4 +2798,11 @@ public final class Player implements PlaybackListener, Listener {
                 .orElse(RENDERER_UNAVAILABLE);
     }
     //endregion
+
+    /**
+     * @return whether the device screen is turned on.
+     */
+    public boolean isScreenOn() {
+        return screenOn;
+    }
 }
