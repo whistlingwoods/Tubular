@@ -102,7 +102,7 @@ public final class SparseItemUtil {
                                                         @NonNull final String url,
                                                         final Consumer<StreamInfo> callback) {
         Toast.makeText(context, R.string.loading_stream_details, Toast.LENGTH_SHORT).show();
-        ExtractorHelper.getStreamInfo(serviceId, url, false)
+        ExtractorHelper.getStreamInfo(context, serviceId, url, false)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
@@ -121,7 +121,7 @@ public final class SparseItemUtil {
                     callback.accept(result);
                 }, throwable -> ErrorUtil.createNotification(context,
                         new ErrorInfo(throwable, UserAction.REQUESTED_STREAM,
-                                "Loading stream info: " + url, serviceId)
+                                "Loading stream info: " + url, serviceId, url)
                 ));
     }
 }

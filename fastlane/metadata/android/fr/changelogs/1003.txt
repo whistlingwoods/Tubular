@@ -1,6 +1,6 @@
-Ceci est une version de correction qui résout les erreurs de YouTube :
-• [YouTube] Correction du non-chargement des informations des vidéos, correction des erreurs HTTP 403 lors de la lecture des vidéos et restauration de la lecture de certaines vidéos à âge restreint
-• Correction des tailles de sous-titres qui ne changent pas
-• Correction du téléchargement des informations deux fois lors de l'ouverture d'un stream
-• [Soundcloud] Suppression des streams protégés par DRM non lisibles
-• Traductions mises à jour
+Il s'agit d'une mise à jour corrective qui corrige des erreurs liées à YouTube :
+• [YouTube] Correction du problème empêchant le chargement des informations sur les vidéos, correction des erreurs HTTP 403 lors de la lecture des vidéos et rétablissement de la lecture de certaines vidéos soumises à une restriction d'âge
+• Correction du problème empêchant la modification de la taille des sous-titres
+• Correction du problème entraînant le téléchargement double des informations lors de l'ouverture d'un flux
+• [Soundcloud] Suppression des flux protégés par DRM et non lisibles
+• Mise à jour des traductions

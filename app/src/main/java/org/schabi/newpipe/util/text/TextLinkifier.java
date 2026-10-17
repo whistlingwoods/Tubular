@@ -67,17 +67,18 @@ public final class TextLinkifier {
                                        @Nullable final String relatedStreamUrl,
                                        @NonNull final CompositeDisposable disposables,
                                        @Nullable final Consumer<TextView> onCompletion) {
-        switch (description.getType()) {
-            case Description.HTML:
-                TextLinkifier.fromHtml(textView, description.getContent(), htmlCompatFlag,
+        switch (description.type()) {
+            case Description.Type.HTML:
+                TextLinkifier.fromHtml(textView, description.content(), htmlCompatFlag,
                         relatedInfoService, relatedStreamUrl, disposables, onCompletion);
                 break;
-            case Description.MARKDOWN:
-                TextLinkifier.fromMarkdown(textView, description.getContent(),
+            case Description.Type.MARKDOWN:
+                TextLinkifier.fromMarkdown(textView, description.content(),
                         relatedInfoService, relatedStreamUrl, disposables, onCompletion);
                 break;
-            case Description.PLAIN_TEXT: default:
-                TextLinkifier.fromPlainText(textView, description.getContent(),
+            case Description.Type.PLAIN_TEXT:
+            default:
+                TextLinkifier.fromPlainText(textView, description.content(),
                         relatedInfoService, relatedStreamUrl, disposables, onCompletion);
                 break;
         }
@@ -192,7 +193,7 @@ public final class TextLinkifier {
      * <p>
      * Instead of using an {@link android.content.Intent#ACTION_VIEW} intent in the description of
      * a content, this method will parse the {@link CharSequence} and replace all current web links
-     * with {@link ShareUtils#openUrlInBrowser(Context, String, boolean)}.
+     * with {@link ShareUtils#openUrlInBrowser(Context, String)}.
      * </p>
      *
      * <p>
@@ -240,7 +241,7 @@ public final class TextLinkifier {
                     for (final URLSpan span : urls) {
                         final String url = span.getURL();
                         final LongPressClickableSpan longPressClickableSpan =
-                                new UrlLongPressClickableSpan(context, disposables, url);
+                                new UrlLongPressClickableSpan(context, url);
 
                         textBlockLinked.setSpan(longPressClickableSpan,
                                 textBlockLinked.getSpanStart(span),

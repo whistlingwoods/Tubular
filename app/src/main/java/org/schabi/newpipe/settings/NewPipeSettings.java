@@ -60,6 +60,9 @@ public final class NewPipeSettings {
         PreferenceManager.setDefaultValues(context, R.xml.update_settings, true);
         PreferenceManager.setDefaultValues(context, R.xml.debug_settings, true);
         PreferenceManager.setDefaultValues(context, R.xml.backup_restore_settings, true);
+        PreferenceManager.setDefaultValues(context, R.xml.sponsor_block_settings, true);
+        PreferenceManager.setDefaultValues(context, R.xml.sponsor_block_category_settings, true);
+        PreferenceManager.setDefaultValues(context, R.xml.return_youtube_dislikes_settings, true);
 
         saveDefaultVideoDownloadDirectory(context);
         saveDefaultAudioDownloadDirectory(context);
@@ -99,16 +102,16 @@ public final class NewPipeSettings {
     }
 
     private static String getNewPipeChildFolderPathForDir(final File dir) {
-        return new File(dir, "NewPipe").toURI().toString();
+        return new File(dir, "Tubular").toURI().toString();
     }
 
     public static boolean useStorageAccessFramework(final Context context) {
-        // There's a FireOS bug which prevents SAF open/close dialogs from being confirmed with a
-        // remote (see #6455).
-        if (DeviceUtils.isFireTv()) {
-            return false;
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             return true;
+        } else if (DeviceUtils.isFireTv()) {
+            // There's a FireOS bug which prevents SAF open/close dialogs from being confirmed with
+            // a remote (see #6455).
+            return false;
         }
 
         final String key = context.getString(R.string.storage_use_saf);
@@ -157,7 +160,7 @@ public final class NewPipeSettings {
                 prefs.getInt(disabledTunnelingAutomaticallyKey, -1) == 0
                         && !prefs.getBoolean(disabledTunnelingKey, false);
 
-        if (App.getApp().isFirstRun()
+        if (App.getInstance().isFirstRun()
                 || (wasDeviceBlacklistUpdated && !wasMediaTunnelingEnabledByUser)) {
             setMediaTunneling(context);
         }
